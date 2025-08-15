@@ -57,6 +57,13 @@ func StartApp(db *gorm.DB) {
 	keyGroup.POST("/", keyHandler.CreateKey)
 	keyGroup.GET("/validate", keyHandler.ValidateKey)
 
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":    "OK",
+			"timestamp": time.Now().Format(time.RFC3339),
+		})
+	})
+
 	if err := r.Run(":8000"); err != nil {
 		log.Fatalf("panic: %v", err)
 		return
