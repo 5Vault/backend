@@ -1,0 +1,28 @@
+name: Deploy Go App to Render
+
+on:
+  push:
+    branches:
+      - main  # Altere se quiser outra branch de deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Instalar Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'  # Ajuste para a versão do seu projeto
+
+      - name: Compilar aplicação
+        run: go build -o app .
+
+      - name: Fazer deploy na Render
+        uses: sws2apps/render-deployment@v1.8.0
+        with:
+          serviceId: srv-d1csbher433s73881ui0
+          apiKey: rnd_gOT8ZQ5D7PWONqpnfuzupPEWNJct
