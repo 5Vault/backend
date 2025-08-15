@@ -37,6 +37,7 @@ func StartApp(db *gorm.DB) {
 	userGroup := apiV1.Group("/user")
 	userRepo := usrRepo.NewUserRepository(db)
 	newMDW := middleware.NewMiddleWare(userRepo)
+	keyMDW := middleware.NewKeyMiddleware(keyRepo.NewKeyRepository(db))
 	userService := usrSvc.NewUserService(userRepo)
 	userHandler := usrHndlr.NewUserHandler(userService)
 
@@ -50,12 +51,12 @@ func StartApp(db *gorm.DB) {
 	loginGroup.POST("/", loginHandler.Try)
 
 	keyGroup := apiV1.Group("/key")
-	keyGroup.Use(newMDW.AuthMiddleware())
+
 	keyRepository := keyRepo.NewKeyRepository(db)
 	keyService := keySvc.NewKeyService(keyRepository)
 	keyHandler := keyHndlr.NewKeyHandler(keyService)
 	keyGroup.POST("/", keyHandler.CreateKey)
-	keyGroup.GET("/validate", keyHandler.ValidateKey)
+	keyGroup.GET("/validate", keyMDW.ValidateKeysMiddleware(), keyHandler.ValidateKey)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

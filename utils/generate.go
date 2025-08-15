@@ -2,16 +2,10 @@ package utils
 
 import (
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
-	"encoding/pem"
+	"fmt"
 )
-
-type KeyPair struct {
-	PublicKey  string `json:"public_key"`
-	PrivateKey string `json:"private_key"`
-}
 
 // GenerateRandomID gera um ID aleatório de 10 caracteres hexadecimais
 func GenerateRandomID() string {
@@ -23,33 +17,42 @@ func GenerateRandomID() string {
 	return hex.EncodeToString(bytes)
 }
 
-// GenerateKeyPair gera um par de chaves RSA pública e privada
-func GenerateKeyPair() (*KeyPair, error) {
-	// Gera chave privada RSA de 2048 bits
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+// GenerateAPIKey gera uma chave de API segura
+func GenerateAPIKey() (string, error) {
+	bytes := make([]byte, 32) // 32 bytes = 256 bits de entropia
+	_, err := rand.Read(bytes)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	// Converte chave privada para formato PEM
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
-	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: privateKeyBytes,
-	})
+	// Codifica em base64 URL-safe (sem padding)
+	apiKey := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes)
+	return apiKey, nil
+}
 
-	// Converte chave pública para formato PEM
-	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+// GenerateAPIKeyWithPrefix gera uma chave de API com prefixo personalizado
+func GenerateAPIKeyWithPrefix(prefix string) (string, error) {
+	bytes := make([]byte, 24) // 24 bytes para manter tamanho razoável com prefixo
+	_, err := rand.Read(bytes)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: publicKeyBytes,
-	})
 
-	return &KeyPair{
-		PublicKey:  string(publicKeyPEM),
-		PrivateKey: string(privateKeyPEM),
-	}, nil
+	keyPart := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(bytes)
+	return fmt.Sprintf("%s_%s", prefix, keyPart), nil
+}
+
+// GenerateHexAPIKey gera uma chave de API em formato hexadecimal
+func GenerateHexAPIKey(length int) (string, error) {
+	if length <= 0 {
+		length = 32 // valor padrão
+	}
+
+	bytes := make([]byte, length)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(bytes), nil
 }

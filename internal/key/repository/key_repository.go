@@ -31,18 +31,10 @@ func (repo *KeyRepository) GetByUserID(userID uint) (*schemas.Key, error) {
 	return key, nil
 }
 
-func (repo *KeyRepository) GetByPublicKey(publicKey string) (*schemas.Key, error) {
-	var key *schemas.Key
-	if err := repo.DB.First(&key, "public_key = ?", publicKey).Error; err != nil {
+func (repo *KeyRepository) GetKey(key string) (*schemas.Key, error) {
+	var result *schemas.Key
+	if err := repo.DB.First(&result, "key = ?", key).Error; err != nil {
 		return nil, err // Other error
 	}
-	return key, nil
-}
-
-func (repo *KeyRepository) GetByPrivateKey(privateKey string) (*schemas.Key, error) {
-	var key *schemas.Key
-	if err := repo.DB.First(&key, "private_key = ?", privateKey).Error; err != nil {
-		return nil, err // Other error
-	}
-	return key, nil
+	return result, nil
 }

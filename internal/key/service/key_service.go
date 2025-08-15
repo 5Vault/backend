@@ -2,9 +2,9 @@ package key
 
 import (
 	"backend/internal/key/repository"
-	"backend/internal/models"
 	"backend/internal/schemas"
 	"backend/utils"
+	"fmt"
 )
 
 type Service struct {
@@ -19,15 +19,18 @@ func NewKeyService(repo *repository.KeyRepository) *Service {
 
 func (s *Service) CreateKey(userId *string) error {
 
-	keys, err := utils.GenerateKeyPair()
+	if userId == nil {
+		return fmt.Errorf("userId is nil")
+	}
+
+	key, err := utils.GenerateAPIKey()
 	if err != nil {
 		return err
 	}
 
 	keySchema := &schemas.Key{
-		PublicKey:  keys.PublicKey,
-		PrivateKey: keys.PrivateKey,
-		UserID:     *userId,
+		Key:    key,
+		UserID: *userId,
 	}
 
 	if err := s.KeyRepo.New(keySchema); err != nil {
@@ -44,35 +47,13 @@ func (s *Service) GetKeyByUserID(userID uint) (*schemas.Key, error) {
 	return key, nil
 }
 
-func (s *Service) GetKeyByPublicKey(publicKey string) (*schemas.Key, error) {
-	key, err := s.KeyRepo.GetByPublicKey(publicKey)
+func (s *Service) ValidateKey(key string) (*schemas.Key, error) {
+	result, err := s.KeyRepo.GetKey(key)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error retrieving key: %w", err)
 	}
-	return key, nil
-}
-
-func (s *Service) GetKeyByPrivateKey(privateKey string) (*schemas.Key, error) {
-	key, err := s.KeyRepo.GetByPrivateKey(privateKey)
-	if err != nil {
-		return nil, err
+	if result == nil {
+		return nil, fmt.Errorf("key not found")
 	}
-	return key, nil
-}
-
-func (s *Service) FitKey(payload models.KeysPayload) bool {
-	if payload.PublicKey == "" || payload.PrivateKey == "" {
-		return false
-	}
-
-	key, err := s.GetKeyByPublicKey(payload.PublicKey)
-	if err != nil {
-		return false
-	}
-
-	if key == nil || key.PrivateKey != payload.PrivateKey {
-		return false
-	}
-
-	return true
+	return result, nil
 }

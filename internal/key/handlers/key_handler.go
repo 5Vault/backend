@@ -2,8 +2,6 @@ package handlers
 
 import (
 	key "backend/internal/key/service"
-	"backend/internal/models"
-	_ "backend/internal/schemas"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +25,7 @@ func (h *KeyHandler) CreateKey(c *gin.Context) {
 	}
 
 	if err := h.KeyService.CreateKey(&userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create key"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -35,16 +33,10 @@ func (h *KeyHandler) CreateKey(c *gin.Context) {
 }
 
 func (h *KeyHandler) ValidateKey(c *gin.Context) {
-	var keyPayload *models.KeysPayload
-	if err := c.ShouldBindJSON(&keyPayload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+	apiKey := c.GetString("api_key")
+	if apiKey == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Api-Key header is required"})
 		return
 	}
-
-	if !h.KeyService.FitKey(*keyPayload) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid key format"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Key is valid"})
+	c.JSON(http.StatusOK, gin.H{"message": apiKey})
 }
