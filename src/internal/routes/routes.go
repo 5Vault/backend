@@ -1,15 +1,15 @@
 package routes
 
 import (
-	keyHndlr "backend/internal/key/handlers"
-	keyRepo "backend/internal/key/repository"
-	keySvc "backend/internal/key/service"
-	lgnHndlr "backend/internal/login/handlers"
-	lgnSvc "backend/internal/login/services"
-	"backend/internal/middleware"
-	usrHndlr "backend/internal/user/handlers"
-	usrRepo "backend/internal/user/repositories"
-	usrSvc "backend/internal/user/services"
+	keyHndlr "backend/src/internal/domain/key/handlers"
+	keyRepo "backend/src/internal/domain/key/repository"
+	keySvc "backend/src/internal/domain/key/service"
+	lgnHndlr "backend/src/internal/domain/login/handlers"
+	lgnSvc "backend/src/internal/domain/login/services"
+	usrHndlr "backend/src/internal/domain/user/handlers"
+	usrRepo "backend/src/internal/domain/user/repositories"
+	usrSvc "backend/src/internal/domain/user/services"
+	middleware2 "backend/src/internal/middleware"
 	"log"
 	"time"
 
@@ -36,8 +36,8 @@ func StartApp(db *gorm.DB) {
 
 	userGroup := apiV1.Group("/user")
 	userRepo := usrRepo.NewUserRepository(db)
-	newMDW := middleware.NewMiddleWare(userRepo)
-	keyMDW := middleware.NewKeyMiddleware(keyRepo.NewKeyRepository(db))
+	newMDW := middleware2.NewMiddleWare(userRepo)
+	keyMDW := middleware2.NewKeyMiddleware(keyRepo.NewKeyRepository(db))
 	userService := usrSvc.NewUserService(userRepo)
 	userHandler := usrHndlr.NewUserHandler(userService)
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	key "backend/internal/key/service"
+	"backend/src/internal/domain/key/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

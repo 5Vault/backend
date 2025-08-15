@@ -1,9 +1,9 @@
 package key
 
 import (
-	"backend/internal/key/repository"
-	"backend/internal/schemas"
-	"backend/utils"
+	"backend/src/internal/domain/key/repository"
+	"backend/src/internal/schemas"
+	"backend/src/utils"
 	"fmt"
 )
 

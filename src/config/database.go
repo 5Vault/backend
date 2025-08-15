@@ -1,7 +1,7 @@
 package database
 
 import (
-	schemas2 "backend/internal/schemas"
+	"backend/src/internal/schemas"
 	"fmt"
 	"os"
 	"time"
@@ -28,7 +28,7 @@ func ConnectPostgres() *gorm.DB {
 	if err != nil {
 		panic("failed to connect to Database")
 	}
-	err = db.AutoMigrate(&schemas2.User{}, &schemas2.File{}, &schemas2.Storage{}, &schemas2.Key{})
+	err = db.AutoMigrate(&schemas.User{}, &schemas.File{}, &schemas.Storage{}, &schemas.Key{})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate database: %v", err))
 	}

@@ -1,8 +1,8 @@
 package lHandlers
 
 import (
-	lgServices "backend/internal/login/services"
-	"backend/internal/models"
+	lgServices "backend/src/internal/domain/login/services"
+	"backend/src/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

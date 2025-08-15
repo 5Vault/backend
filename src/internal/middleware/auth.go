@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"backend/internal/login/services"
-	"backend/internal/user/repositories"
+	lServices "backend/src/internal/domain/login/services"
+	"backend/src/internal/domain/user/repositories"
 	"net/http"
 	"strings"
 

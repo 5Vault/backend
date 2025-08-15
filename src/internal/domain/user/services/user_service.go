@@ -1,11 +1,11 @@
 package services
 
 import (
-	lServices "backend/internal/login/services"
-	"backend/internal/models"
-	"backend/internal/schemas"
-	"backend/internal/user/repositories"
-	utils2 "backend/utils"
+	lServices "backend/src/internal/domain/login/services"
+	"backend/src/internal/domain/user/repositories"
+	"backend/src/internal/models"
+	"backend/src/internal/schemas"
+	utils2 "backend/src/utils"
 	"errors"
 	"fmt"
 	"strings"

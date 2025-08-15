@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"backend/internal/models"
-	"backend/internal/user/services"
+	"backend/src/internal/domain/user/services"
+	"backend/src/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"backend/internal/schemas"
+	"backend/src/internal/schemas"
 
 	"gorm.io/gorm"
 )

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backend/config"
-	"backend/internal/routes"
+	"backend/src/config"
+	"backend/src/internal/routes"
 )
 
 func main() {

@@ -1,9 +1,8 @@
 package middleware
 
 import (
+	"backend/src/internal/domain/key/repository"
 	"net/http"
-
-	"backend/internal/key/repository"
 
 	"github.com/gin-gonic/gin"
 )
