@@ -1,39 +1,38 @@
 package external
 
 import (
-	"context"
+	"bytes"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/supabase-community/storage-go"
 )
 
-func UploadFile(ctx context.Context, client *storage.Client, bucket, path, localFile string) error {
-	file, err := os.Open(localFile)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = client.UploadFile(ctx, bucket, path, file)
-	return err
+type SupaStorage struct{}
+
+// NewSupaStorage cria uma nova instância de SupaStorage
+func NewSupaStorage() *SupaStorage {
+	return &SupaStorage{}
 }
 
-func DownloadFile(ctx context.Context, client *storage.Client, bucket, path, dest string) error {
-	resp, err := client.DownloadFile(ctx, bucket, path)
+var apiKey = os.Getenv("SUPABASE_API")
+var url = "https://" + os.Getenv("SUPABASE_ID") + ".supabase.co/storage/v1"
+var storageClient = storage_go.NewClient(url, apiKey, nil)
+
+func (s *SupaStorage) UploadFile(userID string, localFile []byte, typeFile string) (*storage_go.FileUploadResponse, error) {
+	reader := bytes.NewReader(localFile)
+	fileName := uuid.New().String()
+	res, err := storageClient.UploadFile(userID, fileName, reader, storage_go.FileOptions{
+		ContentType: &typeFile,
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer resp.Body.Close()
-	out, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	_, err = out.ReadFrom(resp.Body)
-	return err
+	return &res, nil
 }
 
-func ListFiles(ctx context.Context, client *storage.Client, bucket string) ([]string, error) {
-	files, err := client.ListFiles(ctx, bucket, "", nil)
+func (s *SupaStorage) ListFiles(userID string) ([]string, error) {
+	files, err := storageClient.ListFiles(userID, "/", storage_go.FileSearchOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -42,4 +41,22 @@ func ListFiles(ctx context.Context, client *storage.Client, bucket string) ([]st
 		names = append(names, f.Name)
 	}
 	return names, nil
+}
+
+func (s *SupaStorage) GetBucket(bucketId string) (*storage_go.Bucket, error) {
+	bucket, err := storageClient.GetBucket(bucketId)
+	if err != nil {
+		return nil, err
+	}
+	return &bucket, nil
+}
+
+func (s *SupaStorage) CreateBucket(bucketId string) (*storage_go.Bucket, error) {
+	bucket, err := storageClient.CreateBucket(bucketId, storage_go.BucketOptions{
+		Public: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &bucket, nil
 }

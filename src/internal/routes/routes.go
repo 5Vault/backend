@@ -6,6 +6,8 @@ import (
 	keySvc "backend/src/internal/domain/key/service"
 	lgnHndlr "backend/src/internal/domain/login/handlers"
 	lgnSvc "backend/src/internal/domain/login/services"
+	"backend/src/internal/domain/storage/handlers"
+	"backend/src/internal/domain/storage/services"
 	usrHndlr "backend/src/internal/domain/user/handlers"
 	usrRepo "backend/src/internal/domain/user/repositories"
 	usrSvc "backend/src/internal/domain/user/services"
@@ -57,6 +59,11 @@ func StartApp(db *gorm.DB) {
 	keyHandler := keyHndlr.NewKeyHandler(keyService)
 	keyGroup.POST("/", keyHandler.CreateKey)
 	keyGroup.GET("/validate", keyMDW.ValidateKeysMiddleware(), keyHandler.ValidateKey)
+
+	storageGroup := apiV1.Group("/file")
+	storageService := services.NewStorageService()
+	storageHandler := handlers.NewStorageHandler(storageService)
+	storageGroup.POST("/upload", keyMDW.ValidateKeysMiddleware(), storageHandler.UploadFile)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

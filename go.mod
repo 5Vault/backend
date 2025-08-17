@@ -6,6 +6,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
+	github.com/google/uuid v1.6.0
 	github.com/supabase-community/storage-go v0.7.0
 	golang.org/x/crypto v0.39.0
 	gorm.io/driver/postgres v1.6.0
