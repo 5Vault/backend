@@ -8,3 +8,8 @@ type RequestFile struct {
 	Data     []byte `json:"data"`
 	MimeType string `json:"mime_type"`
 }
+
+type ResponseFile struct {
+	URL string `json:"url"`
+	Key string `json:"key"`
+}

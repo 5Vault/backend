@@ -2,7 +2,7 @@ package services
 
 import (
 	lServices "backend/src/internal/domain/login/services"
-	"backend/src/internal/domain/user/repositories"
+	"backend/src/internal/domain/user/repository"
 	"backend/src/internal/models"
 	"backend/src/internal/schemas"
 	utils2 "backend/src/utils"

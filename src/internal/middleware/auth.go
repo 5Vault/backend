@@ -2,7 +2,7 @@ package middleware
 
 import (
 	lServices "backend/src/internal/domain/login/services"
-	"backend/src/internal/domain/user/repositories"
+	"backend/src/internal/domain/user/repository"
 	"net/http"
 	"strings"
 

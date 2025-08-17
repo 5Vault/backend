@@ -6,10 +6,11 @@ import (
 	keySvc "backend/src/internal/domain/key/service"
 	lgnHndlr "backend/src/internal/domain/login/handlers"
 	lgnSvc "backend/src/internal/domain/login/services"
-	"backend/src/internal/domain/storage/handlers"
-	"backend/src/internal/domain/storage/services"
+	strHndlr "backend/src/internal/domain/storage/handlers"
+	strRepo "backend/src/internal/domain/storage/repository"
+	strSvc "backend/src/internal/domain/storage/services"
 	usrHndlr "backend/src/internal/domain/user/handlers"
-	usrRepo "backend/src/internal/domain/user/repositories"
+	usrRepo "backend/src/internal/domain/user/repository"
 	usrSvc "backend/src/internal/domain/user/services"
 	middleware2 "backend/src/internal/middleware"
 	"log"
@@ -61,8 +62,9 @@ func StartApp(db *gorm.DB) {
 	keyGroup.GET("/validate", keyMDW.ValidateKeysMiddleware(), keyHandler.ValidateKey)
 
 	storageGroup := apiV1.Group("/file")
-	storageService := services.NewStorageService()
-	storageHandler := handlers.NewStorageHandler(storageService)
+	storageRepository := strRepo.NewStorageRepository(db)
+	storageService := strSvc.NewStorageService(storageRepository)
+	storageHandler := strHndlr.NewStorageHandler(storageService)
 	storageGroup.POST("/upload", keyMDW.ValidateKeysMiddleware(), storageHandler.UploadFile)
 
 	r.GET("/health", func(c *gin.Context) {

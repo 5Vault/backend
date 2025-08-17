@@ -1,7 +1,7 @@
 package lServices
 
 import (
-	"backend/src/internal/domain/user/repositories"
+	"backend/src/internal/domain/user/repository"
 	"backend/src/internal/models"
 	"errors"
 	"fmt"
