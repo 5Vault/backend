@@ -57,17 +57,31 @@ func (s *StorageService) UploadFile(data *models.RequestFile, UserID string) (*s
 	return &newUrl, err
 }
 
-func (s *StorageService) ListFiles() ([]string, error) {
-	// Implement your services logic here
-	return nil, nil
+func (s *StorageService) ListFiles(UserID string) (*[]models.ResponseFile, error) {
+	files, err := s.Repo.GetFilesByUserID(UserID)
+	if err != nil {
+		return nil, err
+	}
+	var response []models.ResponseFile
+	for _, file := range *files {
+		response = append(response, models.ResponseFile{
+			FileID:     file.FileID,
+			FileType:   file.FileType,
+			FileURL:    file.FileURL,
+			UserID:     file.UserID,
+			StorageID:  file.StorageID,
+			UploadedAt: file.UploadedAt,
+		})
+	}
+	return &response, nil
 }
 
-func (s *StorageService) DeleteFile() error {
-	// Implement your services logic here
-	return nil
-}
-
-func (s *StorageService) GetFile() ([]byte, error) {
-	// Implement your services logic here
-	return nil, nil
-}
+//func (s *StorageService) DeleteFile() error {
+//	// Implement your services logic here
+//	return nil
+//}
+//
+//func (s *StorageService) GetFile() ([]byte, error) {
+//	// Implement your services logic here
+//	return nil, nil
+//}

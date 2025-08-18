@@ -10,6 +10,11 @@ type RequestFile struct {
 }
 
 type ResponseFile struct {
-	URL string `json:"url"`
-	Key string `json:"key"`
+	ID         uint   `json:"id"`
+	UserID     string `json:"user_id"`
+	StorageID  string `json:"storage_id"`
+	FileID     string `json:"file_id"`
+	FileType   string `json:"file_type"`
+	FileURL    string `json:"file_url"`
+	UploadedAt string `json:"uploaded_at"`
 }

@@ -26,7 +26,8 @@ func StartApp(db *gorm.DB) {
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:    []string{"*"},
+		AllowHeaders:    []string{"*", "Content-Type", "Authorization", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"},
+		ExposeHeaders:   []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"},
 	}))
 	apiV1 := r.Group("/api/v1")
 	apiV1.GET("/", func(c *gin.Context) {
@@ -51,7 +52,7 @@ func StartApp(db *gorm.DB) {
 	loginGroup := apiV1.Group("/login")
 	loginService := lgnSvc.NewLoginService(userRepo)
 	loginHandler := lgnHndlr.NewLoginHandler(loginService)
-	loginGroup.POST("/", loginHandler.Try)
+	loginGroup.POST("/try", loginHandler.Try)
 
 	keyGroup := apiV1.Group("/key")
 
@@ -66,6 +67,7 @@ func StartApp(db *gorm.DB) {
 	storageService := strSvc.NewStorageService(storageRepository)
 	storageHandler := strHndlr.NewStorageHandler(storageService)
 	storageGroup.POST("/upload", keyMDW.ValidateKeysMiddleware(), storageHandler.UploadFile)
+	storageGroup.GET("/", keyMDW.ValidateKeysMiddleware(), storageHandler.GetFiles)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -18,10 +18,17 @@ func NewLoginHandler(LoginService *lgServices.LoginService) *LoginHandler {
 }
 
 func (l *LoginHandler) Try(c *gin.Context) {
-	var request *models.RequestLogin
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	if username == "" || password == "" {
+		c.JSON(400, gin.H{"error": "username and password headers required"})
 		return
+	}
+
+	request := &models.RequestLogin{
+		Username: username,
+		Password: password,
 	}
 	token, err := l.LoginService.Try(request)
 	if err != nil {

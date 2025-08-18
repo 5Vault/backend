@@ -33,3 +33,19 @@ func (s *StorageHandler) UploadFile(c *gin.Context) {
 	c.JSON(200, gin.H{"data": uploadResponse})
 	return
 }
+
+func (s *StorageHandler) GetFiles(c *gin.Context) {
+	var UserID = c.GetString("api_key")
+	if UserID == "" {
+		c.JSON(400, gin.H{"error": "api_key not provided"})
+		return
+	}
+
+	file, err := s.StorageService.ListFiles(UserID)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, file)
+	return
+}

@@ -32,8 +32,8 @@ func (repo *StorageRepository) GetFileByID(fileID uint) (*models.File, error) {
 	return file, nil
 }
 
-func (repo *StorageRepository) GetFilesByUserID(userID string) ([]models.File, error) {
-	var files []models.File
+func (repo *StorageRepository) GetFilesByUserID(userID string) (*[]schemas.File, error) {
+	var files *[]schemas.File
 	if err := repo.DB.Where("user_id = ?", userID).Find(&files).Error; err != nil {
 		return nil, err // Other error
 	}
