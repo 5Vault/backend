@@ -1,14 +1,14 @@
 package routes
 
 import (
+	strHndlr "backend/src/internal/domain/file/handlers"
+	strRepo "backend/src/internal/domain/file/repository"
+	strSvc "backend/src/internal/domain/file/services"
 	keyHndlr "backend/src/internal/domain/key/handlers"
 	keyRepo "backend/src/internal/domain/key/repository"
-	keySvc "backend/src/internal/domain/key/service"
+	keySvc "backend/src/internal/domain/key/services"
 	lgnHndlr "backend/src/internal/domain/login/handlers"
 	lgnSvc "backend/src/internal/domain/login/services"
-	strHndlr "backend/src/internal/domain/storage/handlers"
-	strRepo "backend/src/internal/domain/storage/repository"
-	strSvc "backend/src/internal/domain/storage/services"
 	usrHndlr "backend/src/internal/domain/user/handlers"
 	usrRepo "backend/src/internal/domain/user/repository"
 	usrSvc "backend/src/internal/domain/user/services"
@@ -40,9 +40,10 @@ func StartApp(db *gorm.DB) {
 
 	userGroup := apiV1.Group("/user")
 	userRepo := usrRepo.NewUserRepository(db)
+	keyRepository := keyRepo.NewKeyRepository(db)
 	newMDW := middleware2.NewMiddleWare(userRepo)
-	keyMDW := middleware2.NewKeyMiddleware(keyRepo.NewKeyRepository(db))
-	userService := usrSvc.NewUserService(userRepo)
+	keyMDW := middleware2.NewKeyMiddleware(keyRepository)
+	userService := usrSvc.NewUserService(userRepo, keyRepository)
 	userHandler := usrHndlr.NewUserHandler(userService)
 
 	userGroup.POST("/", userHandler.CreateUser)
@@ -56,7 +57,6 @@ func StartApp(db *gorm.DB) {
 
 	keyGroup := apiV1.Group("/key")
 
-	keyRepository := keyRepo.NewKeyRepository(db)
 	keyService := keySvc.NewKeyService(keyRepository)
 	keyHandler := keyHndlr.NewKeyHandler(keyService)
 	keyGroup.POST("/", keyHandler.CreateKey)
@@ -68,6 +68,7 @@ func StartApp(db *gorm.DB) {
 	storageHandler := strHndlr.NewStorageHandler(storageService)
 	storageGroup.POST("/upload", keyMDW.ValidateKeysMiddleware(), storageHandler.UploadFile)
 	storageGroup.GET("/", keyMDW.ValidateKeysMiddleware(), storageHandler.GetFiles)
+	storageGroup.GET("/stats", newMDW.AuthMiddleware(), storageHandler.GetFileStats)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

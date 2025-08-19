@@ -39,7 +39,7 @@ func (s *Service) CreateKey(userId *string) error {
 	return nil
 }
 
-func (s *Service) GetKeyByUserID(userID uint) (*schemas.Key, error) {
+func (s *Service) GetKeyByUserID(userID string) (*schemas.Key, error) {
 	key, err := s.KeyRepo.GetByUserID(userID)
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package external
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 
 	"github.com/google/uuid"
@@ -10,7 +11,6 @@ import (
 
 type SupaStorage struct{}
 
-// NewSupaStorage cria uma nova instância de SupaStorage
 func NewSupaStorage() *SupaStorage {
 	return &SupaStorage{}
 }
@@ -20,6 +20,18 @@ var url = "https://" + os.Getenv("SUPABASE_ID") + ".supabase.co/storage/v1"
 var storageClient = storage_go.NewClient(url, apiKey, nil)
 
 func (s *SupaStorage) UploadFile(userID string, localFile []byte, typeFile string) (*storage_go.FileUploadResponse, error) {
+
+	_, err := storageClient.GetBucket(userID)
+	if err != nil {
+
+		_, err := storageClient.CreateBucket(userID, storage_go.BucketOptions{
+			Public: true,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("erro ao criar bucket: %w", err)
+		}
+	}
+
 	reader := bytes.NewReader(localFile)
 	fileName := uuid.New().String()
 	res, err := storageClient.UploadFile(userID, fileName, reader, storage_go.FileOptions{
@@ -51,12 +63,12 @@ func (s *SupaStorage) GetBucket(bucketId string) (*storage_go.Bucket, error) {
 	return &bucket, nil
 }
 
-func (s *SupaStorage) CreateBucket(bucketId string) (*storage_go.Bucket, error) {
-	bucket, err := storageClient.CreateBucket(bucketId, storage_go.BucketOptions{
+func (s *SupaStorage) CreateBucket(bucketId string) error {
+	_, err := storageClient.CreateBucket(bucketId, storage_go.BucketOptions{
 		Public: true,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &bucket, nil
+	return nil
 }

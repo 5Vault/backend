@@ -17,7 +17,6 @@ func NewKeyMiddleware(repo *repository.KeyRepository) *KeyMiddleware {
 	}
 }
 
-// ValidateKeysMiddleware verifica se as chaves Public-Key e Private-Key estão presentes e válidas nos headers
 func (k *KeyMiddleware) ValidateKeysMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.GetHeader("Api-Key")

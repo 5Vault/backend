@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"backend/src/internal/domain/user/services"
+	usrSvc "backend/src/internal/domain/user/services"
 	"backend/src/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
-	UserService *services.UserService
+	UserService *usrSvc.UserService
 }
 
-func NewUserHandler(userService *services.UserService) *UserHandler {
+func NewUserHandler(userService *usrSvc.UserService) *UserHandler {
 	return &UserHandler{
 		UserService: userService,
 	}
@@ -42,7 +42,7 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	user, err := h.UserService.GetUserByID(userID)
+	user, err := h.UserService.GetUserByID(userID, false)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -56,13 +56,14 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 }
 
 func (h *UserHandler) GetOwnUser(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
+
+	userID := c.GetString("user_id")
+	if userID == "" {
 		c.JSON(400, gin.H{"error": "User ID not found in context"})
 		return
 	}
 
-	user, err := h.UserService.GetUserByID(userID.(string))
+	user, err := h.UserService.GetUserByID(userID, true)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

@@ -9,12 +9,20 @@ type RequestUser struct {
 }
 
 type ResponseUser struct {
-	UserID    string `json:"user_id"`
-	Username  string `json:"username"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at,omitempty"`
-	DeletedAt string `json:"deleted_at,omitempty"`
+	UserID    string  `json:"user_id"`
+	Username  string  `json:"username"`
+	Name      string  `json:"name"`
+	Email     string  `json:"email"`
+	Phone     string  `json:"phone"`
+	ApiKey    *string `json:"api_key,omitempty"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at,omitempty"`
+	DeletedAt string  `json:"deleted_at,omitempty"`
+}
+
+type UserDashboard struct {
+	TotalFiles   int64  `json:"total_files"`
+	TotalStorage int64  `json:"total_storage"`
+	TotalSize    int64  `json:"total_size"`
+	RecentFiles  []File `json:"recent_files"`
 }

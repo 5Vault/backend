@@ -23,7 +23,7 @@ func (repo *KeyRepository) New(key *schemas.Key) error {
 	return nil
 }
 
-func (repo *KeyRepository) GetByUserID(userID uint) (*schemas.Key, error) {
+func (repo *KeyRepository) GetByUserID(userID string) (*schemas.Key, error) {
 	var key *schemas.Key
 	if err := repo.DB.First(&key, "user_id = ?", userID).Error; err != nil {
 		return nil, err // Other error

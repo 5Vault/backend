@@ -1,8 +1,10 @@
 package services
 
 import (
+	keyRepo "backend/src/internal/domain/key/repository"
 	lServices "backend/src/internal/domain/login/services"
-	"backend/src/internal/domain/user/repository"
+	usrRepo "backend/src/internal/domain/user/repository"
+
 	"backend/src/internal/models"
 	"backend/src/internal/schemas"
 	utils2 "backend/src/utils"
@@ -14,12 +16,14 @@ import (
 )
 
 type UserService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo *usrRepo.UserRepository
+	KeyRepo  *keyRepo.KeyRepository
 }
 
-func NewUserService(userRepo *repositories.UserRepository) *UserService {
+func NewUserService(userRepo *usrRepo.UserRepository, keyRepo *keyRepo.KeyRepository) *UserService {
 	return &UserService{
 		UserRepo: userRepo,
+		KeyRepo:  keyRepo,
 	}
 }
 
@@ -73,7 +77,7 @@ func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 	return &newUserID, nil
 }
 
-func (s *UserService) GetUserByID(id string) (*models.ResponseUser, error) {
+func (s *UserService) GetUserByID(id string, own bool) (*models.ResponseUser, error) {
 	user, err := s.UserRepo.GetUser(id)
 	if err != nil {
 		return nil, err
@@ -89,6 +93,17 @@ func (s *UserService) GetUserByID(id string) (*models.ResponseUser, error) {
 		Phone:     user.Phone,
 		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+	}
+	if own {
+		key, err := s.KeyRepo.GetByUserID(id)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving key: %w", err)
+		}
+		if key != nil {
+			userResponse.ApiKey = &key.Key
+		} else {
+			userResponse.ApiKey = nil
+		}
 	}
 
 	return &userResponse, nil
