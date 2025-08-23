@@ -29,7 +29,6 @@ func (s *StorageService) UploadFile(data *models.RequestFile, BucketID string) (
 	default:
 		return nil, fmt.Errorf("tipo MIME não suportado: %s", data.MimeType)
 	}
-	fmt.Printf("DEBUG: Iniciando upload do arquivo...\n")
 	res, err := supa.UploadFile(BucketID, data.Data, data.MimeType)
 	if err != nil {
 		return nil, err
