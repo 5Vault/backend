@@ -32,12 +32,17 @@ func (repo *StorageRepository) GetFileByID(fileID uint) (*models.File, error) {
 	return file, nil
 }
 
-func (repo *StorageRepository) GetFilesByUserID(userID string) (*[]schemas.File, error) {
-	var files *[]schemas.File
-	if err := repo.DB.Where("user_id = ?", userID).Find(&files).Error; err != nil {
-		return nil, err // Other error
+func (repo *StorageRepository) GetFilesByUserID(userID string, itemsPerPage, page int) (*[]schemas.File, error) {
+	var files []schemas.File
+	query := repo.DB.Where("user_id = ?", userID).Order("uploaded_at DESC")
+
+	offset := (page - 1) * itemsPerPage
+	query = query.Limit(itemsPerPage).Offset(offset)
+
+	if err := query.Find(&files).Error; err != nil {
+		return nil, err
 	}
-	return files, nil
+	return &files, nil
 }
 
 func (repo *StorageRepository) GetFilesByKey(key string) (*[]schemas.File, error) {

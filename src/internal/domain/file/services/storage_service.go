@@ -6,6 +6,7 @@ import (
 	"backend/src/internal/schemas"
 	"fmt"
 	"os"
+	"time"
 )
 import "backend/src/external"
 
@@ -37,12 +38,13 @@ func (s *StorageService) UploadFile(data *models.RequestFile, BucketID string) (
 	newUrl := "https://" + os.Getenv("SUPABASE_ID") + ".supabase.co/storage/v1/object/public/" + res.Key
 
 	file := &schemas.File{
-		UserID:    BucketID,
-		StorageID: BucketID,
-		FileID:    res.Key,
-		FileType:  data.MimeType,
-		FileURL:   newUrl,
-		FileSize:  int64(len(data.Data)),
+		UserID:     BucketID,
+		StorageID:  BucketID,
+		FileID:     res.Key,
+		FileType:   data.MimeType,
+		FileURL:    newUrl,
+		FileSize:   int64(len(data.Data)),
+		UploadedAt: time.Now(),
 	}
 
 	fileID, err := s.Repo.CreateFile(file)
@@ -61,12 +63,11 @@ func (s *StorageService) UploadFile(data *models.RequestFile, BucketID string) (
 		FileSize:   int64(len(data.Data)),
 	}
 
-	fmt.Printf("DEBUG: Arquivo salvo com sucesso, ID: %d, URL: %s\n", *fileID, newUrl)
 	return response, nil
 }
 
-func (s *StorageService) ListFiles(UserID string) (*[]models.ResponseFile, error) {
-	files, err := s.Repo.GetFilesByUserID(UserID)
+func (s *StorageService) ListFiles(UserID string, ItemsPerPage, Page int) (*[]models.ResponseFile, error) {
+	files, err := s.Repo.GetFilesByUserID(UserID, ItemsPerPage, Page)
 	if err != nil {
 		return nil, err
 	}

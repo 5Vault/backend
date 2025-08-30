@@ -3,6 +3,7 @@ package handlers
 import (
 	"backend/src/internal/domain/file/services"
 	"backend/src/internal/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,10 +41,28 @@ func (s *StorageHandler) GetFiles(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "api_key not provided"})
 		return
 	}
+	itemsPerPageStr := c.Query("items_per_page")
+	pageStr := c.Query("page")
 
-	file, err := s.StorageService.ListFiles(UserID)
+	itemsPerPage, err := strconv.Atoi(itemsPerPageStr)
+	if err != nil || itemsPerPage <= 0 {
+		itemsPerPage = 10 // valor padrão
+	}
+
+	pageIndex := 1
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			pageIndex = p
+		}
+	}
+
+	file, err := s.StorageService.ListFiles(UserID, itemsPerPage, pageIndex)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if file == nil || len(*file) == 0 {
+		c.JSON(404, gin.H{"message": "no files found"})
 		return
 	}
 	c.JSON(200, file)
