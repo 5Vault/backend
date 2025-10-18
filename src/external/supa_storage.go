@@ -3,9 +3,10 @@ package external
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
-	"github.com/google/uuid"
 	"github.com/supabase-community/storage-go"
 )
 
@@ -19,7 +20,7 @@ var apiKey = os.Getenv("SUPABASE_API")
 var url = "https://" + os.Getenv("SUPABASE_ID") + ".supabase.co/storage/v1"
 var storageClient = storage_go.NewClient(url, apiKey, nil)
 
-func (s *SupaStorage) UploadFile(userID string, localFile []byte, typeFile string) (*storage_go.FileUploadResponse, error) {
+func (s *SupaStorage) UploadFile(userID string, localFile []byte, typeFile string, fileName string) (*storage_go.FileUploadResponse, error) {
 
 	_, err := storageClient.GetBucket(userID)
 	if err != nil {
@@ -33,7 +34,7 @@ func (s *SupaStorage) UploadFile(userID string, localFile []byte, typeFile strin
 	}
 
 	reader := bytes.NewReader(localFile)
-	fileName := uuid.New().String()
+
 	res, err := storageClient.UploadFile(userID, fileName, reader, storage_go.FileOptions{
 		ContentType: &typeFile,
 	})
@@ -71,4 +72,25 @@ func (s *SupaStorage) CreateBucket(bucketId string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *SupaStorage) DownloadFile(fileURL string) ([]byte, error) {
+	// Faz requisição HTTP para buscar o arquivo do storage
+	resp, err := http.Get(fileURL)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao fazer requisição para o storage: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("erro ao baixar arquivo: status %d", resp.StatusCode)
+	}
+
+	// Lê o conteúdo do arquivo
+	fileData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao ler conteúdo do arquivo: %w", err)
+	}
+
+	return fileData, nil
 }

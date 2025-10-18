@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	lServices "backend/src/internal/domain/login/services"
-	"backend/src/internal/domain/user/repository"
+	"backend/src/internal/repository/user"
+	lServices "backend/src/utils"
 	"net/http"
 	"strings"
 
@@ -12,10 +12,10 @@ import (
 var lSvcs = lServices.NewAuthService()
 
 type MiddleWare struct {
-	UserRepo *repositories.UserRepository
+	UserRepo *user.UserRepository
 }
 
-func NewMiddleWare(userRepo *repositories.UserRepository) *MiddleWare {
+func NewMiddleWare(userRepo *user.UserRepository) *MiddleWare {
 	return &MiddleWare{
 		UserRepo: userRepo,
 	}
@@ -35,14 +35,14 @@ func (m *MiddleWare) AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := lSvcs.ValidateToken(tokenString)
 
-		user, err := m.UserRepo.GetUserByID(claims.UserID)
+		consultUser, err := m.UserRepo.GetUserByID(claims.UserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
 
-		if user == nil {
+		if consultUser == nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return

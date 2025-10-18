@@ -83,3 +83,45 @@ func (s *StorageHandler) GetFileStats(c *gin.Context) {
 	}
 	c.JSON(200, stats)
 }
+
+func (s *StorageHandler) GetFileByID(c *gin.Context) {
+	fileID := c.Param("id")
+	if fileID == "" {
+		c.JSON(400, gin.H{"error": "file_id not provided"})
+		return
+	}
+
+	// Verificar se o parâmetro details foi fornecido na query string
+	detailsStr := c.Query("details")
+	details := detailsStr == "true"
+
+	file, err := s.StorageService.GetFileByID(fileID, details)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if file == nil {
+		c.JSON(404, gin.H{"message": "file not found"})
+		return
+	}
+
+	// Se details=false, retorna os dados binários com o Content-Type apropriado
+	if !details {
+		fileData, ok := file.(*models.FileData)
+		if !ok {
+			c.JSON(500, gin.H{"error": "erro ao processar dados do arquivo"})
+			return
+		}
+
+		// Define o Content-Type correto para a imagem/arquivo
+		c.Header("Content-Type", fileData.MimeType)
+		c.Header("Content-Length", strconv.Itoa(len(fileData.Data)))
+
+		// Retorna os dados binários diretamente
+		c.Data(200, fileData.MimeType, fileData.Data)
+		return
+	}
+
+	// Se details=true, retorna JSON com os metadados
+	c.JSON(200, file)
+}

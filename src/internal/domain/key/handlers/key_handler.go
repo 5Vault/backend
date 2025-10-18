@@ -38,5 +38,5 @@ func (h *KeyHandler) ValidateKey(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Api-Key header is required"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": apiKey})
+	c.JSON(http.StatusOK, gin.H{"valid_key": true})
 }

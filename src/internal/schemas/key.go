@@ -8,3 +8,7 @@ type Key struct {
 	Key       string     `gorm:"key"`
 	CreatedAt *time.Time `gorm:"autoCreateTime"`
 }
+
+func (Key) TableName() string {
+	return "key"
+}

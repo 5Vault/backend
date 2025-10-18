@@ -7,5 +7,7 @@ import (
 
 func main() {
 	db := *database.ConnectPostgres()
-	routes.StartApp(&db)
+	redis := *database.ConnectRedis()
+
+	routes.StartApp(&db, &redis)
 }

@@ -1,17 +1,17 @@
 package key
 
 import (
-	"backend/src/internal/domain/key/repository"
+	"backend/src/internal/repository/key"
 	"backend/src/internal/schemas"
 	"backend/src/utils"
 	"fmt"
 )
 
 type Service struct {
-	KeyRepo *repository.KeyRepository
+	KeyRepo *key.KeyRepository
 }
 
-func NewKeyService(repo *repository.KeyRepository) *Service {
+func NewKeyService(repo *key.KeyRepository) *Service {
 	return &Service{
 		KeyRepo: repo,
 	}

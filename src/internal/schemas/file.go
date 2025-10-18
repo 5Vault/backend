@@ -12,3 +12,7 @@ type File struct {
 	UploadedAt time.Time `gorm:"uploaded_at"`
 	FileSize   int64     `gorm:"file_size"`
 }
+
+func (File) TableName() string {
+	return "file"
+}

@@ -4,6 +4,11 @@ type File struct {
 	Url string `json:"url"`
 }
 
+type FileData struct {
+	Data     []byte `json:"-"` // Dados binários do arquivo
+	MimeType string `json:"-"` // Tipo MIME do arquivo
+}
+
 type RequestFile struct {
 	Data     []byte `json:"data"`
 	MimeType string `json:"mime_type"`

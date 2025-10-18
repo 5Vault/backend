@@ -9,15 +9,18 @@ type RequestUser struct {
 }
 
 type ResponseUser struct {
-	UserID    string  `json:"user_id"`
-	Username  string  `json:"username"`
-	Name      string  `json:"name"`
-	Email     string  `json:"email"`
-	Phone     string  `json:"phone"`
-	ApiKey    *string `json:"api_key,omitempty"`
-	CreatedAt string  `json:"created_at"`
-	UpdatedAt string  `json:"updated_at,omitempty"`
-	DeletedAt string  `json:"deleted_at,omitempty"`
+	UserID        string  `json:"user_id"`
+	Username      string  `json:"username"`
+	Name          string  `json:"name"`
+	Email         string  `json:"email"`
+	Phone         string  `json:"phone"`
+	ApiKey        *string `json:"api_key,omitempty"`
+	Tier          string  `json:"tier,omitempty"`
+	TierName      string  `json:"tier_name,omitempty"`
+	TierUpdatedAt string  `json:"tier_update_at,omitempty"`
+	CreatedAt     string  `json:"created_at"`
+	UpdatedAt     string  `json:"updated_at,omitempty"`
+	DeletedAt     string  `json:"deleted_at,omitempty"`
 }
 
 type UserDashboard struct {

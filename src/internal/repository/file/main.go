@@ -1,4 +1,4 @@
-package repository
+package file
 
 import (
 	"backend/src/internal/models"
@@ -24,8 +24,8 @@ func (repo *StorageRepository) CreateFile(file *schemas.File) (*uint, error) {
 	return &file.ID, nil
 }
 
-func (repo *StorageRepository) GetFileByID(fileID uint) (*models.File, error) {
-	var file *models.File
+func (repo *StorageRepository) GetFileByID(fileID string) (*schemas.File, error) {
+	var file *schemas.File
 	if err := repo.DB.First(&file, "file_id = ?", fileID).Error; err != nil {
 		return nil, err // Other error
 	}

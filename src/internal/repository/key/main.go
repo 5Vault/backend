@@ -1,4 +1,4 @@
-package repository
+package key
 
 import (
 	"backend/src/internal/schemas"

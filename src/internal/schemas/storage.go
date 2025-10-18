@@ -15,3 +15,7 @@ type Storage struct {
 	UpdatedAt *time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt *gorm.DeletedAt `gorm:"index"`
 }
+
+func (Storage) TableName() string {
+	return "storage"
+}

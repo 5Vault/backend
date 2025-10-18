@@ -1,9 +1,9 @@
 package services
 
 import (
-	keyRepo "backend/src/internal/domain/key/repository"
-	lServices "backend/src/internal/domain/login/services"
-	usrRepo "backend/src/internal/domain/user/repository"
+	keyRepo "backend/src/internal/repository/key"
+	usrRepo "backend/src/internal/repository/user"
+	"time"
 
 	"backend/src/internal/models"
 	"backend/src/internal/schemas"
@@ -12,8 +12,12 @@ import (
 	"fmt"
 	"strings"
 
+	tierService "backend/src/internal/domain/user/tier/service"
+
 	"gorm.io/gorm"
 )
+
+var tierSvc = tierService.NewTierService()
 
 type UserService struct {
 	UserRepo *usrRepo.UserRepository
@@ -27,7 +31,7 @@ func NewUserService(userRepo *usrRepo.UserRepository, keyRepo *keyRepo.KeyReposi
 	}
 }
 
-var cSvc = lServices.NewCryptService()
+var cSvc = utils2.NewCryptService()
 
 func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 
@@ -37,12 +41,14 @@ func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 	newUserID := utils2.GenerateRandomID()
 
 	dbUser := &schemas.User{
-		UserID:   newUserID,
-		Username: user.Username,
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: hashPassword,
-		Phone:    user.Phone,
+		UserID:        newUserID,
+		Username:      user.Username,
+		Name:          user.Name,
+		Email:         user.Email,
+		Password:      hashPassword,
+		Phone:         user.Phone,
+		Tier:          "free",
+		TierUpdatedAt: time.Now(),
 	}
 
 	existingUser, err := s.UserRepo.GetUserByID(user.Username)
@@ -73,6 +79,19 @@ func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 		}
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
+	key, err := utils2.GenerateAPIKey()
+	if err != nil {
+		return nil, err
+	}
+
+	keySchema := &schemas.Key{
+		Key:    key,
+		UserID: newUserID,
+	}
+
+	if err := s.KeyRepo.New(keySchema); err != nil {
+		return nil, err
+	}
 
 	return &newUserID, nil
 }
@@ -86,13 +105,16 @@ func (s *UserService) GetUserByID(id string, own bool) (*models.ResponseUser, er
 		return nil, errors.New("user not found")
 	}
 	userResponse := models.ResponseUser{
-		UserID:    user.UserID,
-		Username:  user.Username,
-		Name:      user.Name,
-		Email:     user.Email,
-		Phone:     user.Phone,
-		CreatedAt: user.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt: user.UpdatedAt.Format("2006-01-02 15:04:05"),
+		UserID:        user.UserID,
+		Username:      user.Username,
+		Name:          user.Name,
+		Email:         user.Email,
+		Phone:         user.Phone,
+		Tier:          user.Tier,
+		TierName:      tierSvc.GetTierNameByID(user.Tier),
+		TierUpdatedAt: user.TierUpdatedAt.Format("2006-01-02 15:04:05"),
+		CreatedAt:     user.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:     user.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}
 	if own {
 		key, err := s.KeyRepo.GetByUserID(id)

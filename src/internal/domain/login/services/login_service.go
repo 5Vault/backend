@@ -1,20 +1,21 @@
 package lServices
 
 import (
-	"backend/src/internal/domain/user/repository"
 	"backend/src/internal/models"
+	"backend/src/internal/repository/user"
+	"backend/src/utils"
 	"errors"
 	"fmt"
 )
 
-var CryptSvc *CryptService = NewCryptService()
-var AuthSvc *AuthService = NewAuthService()
+var CryptSvc = utils.NewCryptService()
+var AuthSvc = utils.NewAuthService()
 
 type LoginService struct {
-	UserRepo *repositories.UserRepository
+	UserRepo *user.UserRepository
 }
 
-func NewLoginService(userRepo *repositories.UserRepository) *LoginService {
+func NewLoginService(userRepo *user.UserRepository) *LoginService {
 	return &LoginService{
 		UserRepo: userRepo,
 	}
@@ -22,18 +23,18 @@ func NewLoginService(userRepo *repositories.UserRepository) *LoginService {
 
 func (l *LoginService) Try(credentials *models.RequestLogin) (*string, error) {
 
-	user, err := l.UserRepo.GetUserByUsername(credentials.Username)
+	userResult, err := l.UserRepo.GetUserByUsername(credentials.Username)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving user: %w", err)
 	}
-	if user == nil {
+	if userResult == nil {
 		return nil, errors.New("user not found")
 	}
-	if !CryptSvc.ComparePassword(user.Password, credentials.Password) {
+	if !CryptSvc.ComparePassword(userResult.Password, credentials.Password) {
 		return nil, errors.New("invalid password")
 	}
 
-	newToken, err := AuthSvc.GenerateJwt(user.UserID)
+	newToken, err := AuthSvc.GenerateJwt(userResult.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("error generating token: %w", err)
 	}
