@@ -129,6 +129,12 @@ func (s *StorageService) GetFileStats(userID string) (*models.FileStats, error) 
 		}
 	}
 
+	var weeklyUsage []models.WeeklyFileUsage
+	weeklyUsage, err = s.Repo.GetWeeklyFileUsage(userID)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao obter uso semanal dos arquivos: %v", err)
+	}
+
 	// Montar o modelo de resposta final (responsabilidade do service)
 	return &models.FileStats{
 		TotalFiles:  totalFiles,
@@ -136,6 +142,7 @@ func (s *StorageService) GetFileStats(userID string) (*models.FileStats, error) 
 		TotalSize:   totalStorageBytes, // 250 GB fixo
 		FreeSpace:   freeSpace,         // Espaço disponível
 		RecentFiles: recentFiles,
+		WeeklyUsage: weeklyUsage,
 	}, nil
 }
 

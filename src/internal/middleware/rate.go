@@ -22,6 +22,12 @@ func NewRateMiddleware(redisClient *redis.Client) *RateMiddleware {
 
 func (r *RateMiddleware) RateLimitMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip rate limiting for specific endpoints
+		if c.Request.Method == "GET" && c.FullPath() == "/api/v1/file/:id" {
+			c.Next()
+			return
+		}
+
 		// Get client IP address
 		clientIP := c.ClientIP()
 
@@ -54,7 +60,7 @@ func (r *RateMiddleware) RateLimitMiddleware() gin.HandlerFunc {
 		}
 
 		// Check if limit exceeded
-		if count > 5 {
+		if count > 10 {
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":   "Too many requests",
 				"message": "Rate limit exceeded. Please try again later.",

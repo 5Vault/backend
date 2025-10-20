@@ -26,9 +26,15 @@ type ResponseFile struct {
 }
 
 type FileStats struct {
-	TotalFiles  int64          `json:"total_files"`
-	UsedSize    int64          `json:"used_size"`  // Tamanho real dos arquivos
-	TotalSize   int64          `json:"total_size"` // 250 GB fixo
-	FreeSpace   int64          `json:"free_space"` // Espaço livre
-	RecentFiles []ResponseFile `json:"recent_files"`
+	TotalFiles  int64             `json:"total_files"`
+	UsedSize    int64             `json:"used_size"`  // Tamanho real dos arquivos
+	TotalSize   int64             `json:"total_size"` // 250 GB fixo
+	FreeSpace   int64             `json:"free_space"` // Espaço livre
+	RecentFiles []ResponseFile    `json:"recent_files"`
+	WeeklyUsage []WeeklyFileUsage `json:"weekly_usage"`
+}
+
+type WeeklyFileUsage struct {
+	Day        string `json:"day"`
+	FileAmount int64  `json:"file_amount"`
 }

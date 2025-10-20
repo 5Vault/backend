@@ -87,3 +87,19 @@ func (repo *StorageRepository) GetRecentFilesByUserID(userID string, limit int) 
 	}
 	return files, nil
 }
+
+func (repo *StorageRepository) GetWeeklyFileUsage(userID string) ([]models.WeeklyFileUsage, error) {
+	var results []models.WeeklyFileUsage
+
+	err := repo.DB.Model(&schemas.File{}).
+		Select("TO_CHAR(uploaded_at, 'Day') AS day, COUNT(*) AS file_amount").
+		Where("user_id = ? AND uploaded_at >= NOW() - INTERVAL '7 days'", userID).
+		Group("day").
+		Order("MIN(uploaded_at)").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
