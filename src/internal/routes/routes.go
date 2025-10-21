@@ -78,7 +78,7 @@ func StartApp(db *gorm.DB, redis *redis.Client) {
 	storageHandler := strHndlr.NewStorageHandler(storageService)
 	storageGroup.POST("/upload", keyMDW.ValidateKeysMiddleware(), storageHandler.UploadFile)
 	storageGroup.GET("/", keyMDW.ValidateKeysMiddleware(), storageHandler.GetFiles)
-	storageGroup.GET("/:id", keyMDW.ValidateKeysMiddleware(), storageHandler.GetFileByID)
+	storageGroup.GET("/:id", storageHandler.GetFileByID)
 	storageGroup.GET("/stats", newMDW.AuthMiddleware(), storageHandler.GetFileStats)
 
 	tierGroup := apiV1.Group("/tier")
