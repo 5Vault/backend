@@ -2,3 +2,10 @@
 .idea/*
 .vendor/*
 .vendor
+*.exe
+bin/
+tmp/
+logs/
+uploads/
+main.exe
+src/cmd/*.exe
