@@ -6,16 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Storage struct {
-	ID        uint            `gorm:"primaryKey"`
-	UserID    uint            `gorm:"user_id;index"`
-	Name      string          `gorm:"name;unique"`
-	Size      int64           `gorm:"size"`
-	CreatedAt *time.Time      `gorm:"autoCreateTime"`
-	UpdatedAt *time.Time      `gorm:"autoUpdateTime"`
+// Directory é um diretório (prefixo) dentro de um Bucket.
+// Arquivos ficam em {DirID}/{filename} no bucket R2.
+type Directory struct {
+	DirID     string          `gorm:"primaryKey"`
+	BucketID  string          `gorm:"index:idx_dir_bucket_user,priority:1;not null"`
+	UserID    string          `gorm:"index:idx_dir_bucket_user,priority:2;not null"`
+	Name      string          `gorm:"not null"`
+	CreatedAt *time.Time
 	DeletedAt *gorm.DeletedAt `gorm:"index"`
 }
 
-func (Storage) TableName() string {
-	return "storage"
-}
+func (Directory) TableName() string { return "directory" }

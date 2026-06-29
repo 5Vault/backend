@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"backend/src/internal/domain/file/services"
-	"backend/src/internal/models"
+	"backend/src/pkg/apperr"
+	"backend/src/pkg/respond"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -13,115 +14,63 @@ type StorageHandler struct {
 }
 
 func NewStorageHandler(storageService *services.StorageService) *StorageHandler {
-	return &StorageHandler{
-		StorageService: storageService,
-	}
-}
-
-func (s *StorageHandler) UploadFile(c *gin.Context) {
-	var UserID = c.GetString("user_id_key")
-
-	var request *models.RequestFile
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	uploadResponse, err := s.StorageService.UploadFile(request, UserID)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(200, uploadResponse)
+	return &StorageHandler{StorageService: storageService}
 }
 
 func (s *StorageHandler) GetFiles(c *gin.Context) {
-	var UserID = c.GetString("user_id_key")
-	if UserID == "" {
-		c.JSON(400, gin.H{"error": "api_key not provided"})
+	userID := c.GetString("user_id_key")
+	if userID == "" {
+		respond.Err(c, apperr.BadRequest("api key not provided"))
 		return
 	}
-	itemsPerPageStr := c.Query("items_per_page")
-	pageStr := c.Query("page")
 
-	itemsPerPage, err := strconv.Atoi(itemsPerPageStr)
-	if err != nil || itemsPerPage <= 0 {
-		itemsPerPage = 10 // valor padrão
+	itemsPerPage := 10
+	if v, err := strconv.Atoi(c.Query("items_per_page")); err == nil && v > 0 {
+		itemsPerPage = v
+	}
+	page := 1
+	if v, err := strconv.Atoi(c.Query("page")); err == nil && v > 0 {
+		page = v
 	}
 
-	pageIndex := 1
-	if pageStr != "" {
-		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
-			pageIndex = p
-		}
-	}
-
-	file, err := s.StorageService.ListFiles(UserID, itemsPerPage, pageIndex)
+	files, err := s.StorageService.ListFiles(userID, itemsPerPage, page)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		respond.Err(c, apperr.Internal("failed to list files", err))
 		return
 	}
-	if file == nil || len(*file) == 0 {
-		c.JSON(404, gin.H{"message": "no files found"})
+	if files == nil || len(*files) == 0 {
+		respond.Err(c, apperr.NotFound("no files found"))
 		return
 	}
-	c.JSON(200, file)
-	return
+	respond.OK(c, files)
 }
 
 func (s *StorageHandler) GetFileStats(c *gin.Context) {
-	var UserID = c.GetString("user_id")
-	if UserID == "" {
-		c.JSON(400, gin.H{"error": "user_id not provided"})
+	userID := c.GetString("user_id")
+	if userID == "" {
+		respond.Err(c, apperr.BadRequest("user_id not provided"))
 		return
 	}
 
-	stats, err := s.StorageService.GetFileStats(UserID)
+	stats, err := s.StorageService.GetFileStats(userID)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		respond.Err(c, apperr.Internal("failed to get file stats", err))
 		return
 	}
-	c.JSON(200, stats)
+	respond.OK(c, stats)
 }
 
 func (s *StorageHandler) GetFileByID(c *gin.Context) {
 	fileID := c.Param("id")
 	if fileID == "" {
-		c.JSON(400, gin.H{"error": "file_id not provided"})
+		respond.Err(c, apperr.BadRequest("file_id not provided"))
 		return
 	}
 
-	// Verificar se o parâmetro details foi fornecido na query string
-	detailsStr := c.Query("details")
-	details := detailsStr == "true"
-
-	file, err := s.StorageService.GetFileByID(fileID, details)
+	file, err := s.StorageService.GetFileByID(fileID)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		respond.Err(c, apperr.NotFound("file not found"))
 		return
 	}
-	if file == nil {
-		c.JSON(404, gin.H{"message": "file not found"})
-		return
-	}
-
-	// Se details=false, retorna os dados binários com o Content-Type apropriado
-	if !details {
-		fileData, ok := file.(*models.FileData)
-		if !ok {
-			c.JSON(500, gin.H{"error": "erro ao processar dados do arquivo"})
-			return
-		}
-
-		// Define o Content-Type correto para a imagem/arquivo
-		c.Header("Content-Type", fileData.MimeType)
-		c.Header("Content-Length", strconv.Itoa(len(fileData.Data)))
-
-		// Retorna os dados binários diretamente
-		c.Data(200, fileData.MimeType, fileData.Data)
-		return
-	}
-
-	// Se details=true, retorna JSON com os metadados
-	c.JSON(200, file)
+	respond.OK(c, file)
 }

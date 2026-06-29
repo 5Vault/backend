@@ -1,28 +1,32 @@
 package database
 
 import (
+	"backend/src/internal/logger"
 	"context"
-	"fmt"
-	"log"
 	"os"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 func ConnectRedis() *redis.Client {
-	var RedisClient *redis.Client
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "redis-15242.c240.us-east-1-3.ec2.redns.redis-cloud.com:15242",
-		Password: os.Getenv("PASSWORD_REDIS"), // no password set
-		DB:       0,                           // use default DB
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		panic("REDIS_ADDR environment variable not set")
+	}
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
 	})
 
 	ctx := context.Background()
-	_, err := RedisClient.Ping(ctx).Result()
-	if err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
+	if _, err := client.Ping(ctx).Result(); err != nil {
+		logger.Error("failed to connect to redis", zap.String("addr", addr), zap.Error(err))
+		panic("failed to connect to redis")
 	}
 
-	fmt.Println("Successfully connected to Redis!")
-	return RedisClient
+	logger.Info("redis connected", zap.String("addr", addr))
+	return client
 }

@@ -55,6 +55,14 @@ func (repo *UserRepository) GetUserByEmail(email string) (*schemas.User, error) 
 	return user, nil
 }
 
+func (repo *UserRepository) GetUserByGoogleID(googleID string) (*schemas.User, error) {
+	var user schemas.User
+	if err := repo.DB.Where("google_id = ?", googleID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (repo *UserRepository) GetUserByPhone(phone string) (*schemas.User, error) {
 	var user *schemas.User
 	if err := repo.DB.Where("phone = ?", phone).First(&user).Error; err != nil {
@@ -79,4 +87,29 @@ func (repo *UserRepository) DeleteUser(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (repo *UserRepository) GetUserByDiscordID(discordID string) (*schemas.User, error) {
+	var user schemas.User
+	if err := repo.DB.Where("discord_id = ?", discordID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (repo *UserRepository) UpdateAvatarURL(userID, url string) error {
+	return repo.DB.Model(&schemas.User{}).Where("user_id = ?", userID).Update("avatar_url", url).Error
+}
+
+func (repo *UserRepository) Set2FASecret(userID, secret string) error {
+	return repo.DB.Model(&schemas.User{}).Where("user_id = ?", userID).Update("two_fa_secret", secret).Error
+}
+
+func (repo *UserRepository) Enable2FA(userID string) error {
+	return repo.DB.Model(&schemas.User{}).Where("user_id = ?", userID).Update("two_fa_enabled", true).Error
+}
+
+func (repo *UserRepository) Disable2FA(userID string) error {
+	return repo.DB.Model(&schemas.User{}).Where("user_id = ?", userID).
+		Updates(map[string]interface{}{"two_fa_enabled": false, "two_fa_secret": nil}).Error
 }

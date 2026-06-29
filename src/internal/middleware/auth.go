@@ -2,48 +2,48 @@ package middleware
 
 import (
 	"backend/src/internal/repository/user"
-	lServices "backend/src/utils"
+	"backend/src/utils"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-var lSvcs = lServices.NewAuthService()
+var authSvc = utils.NewAuthService()
 
 type MiddleWare struct {
 	UserRepo *user.UserRepository
 }
 
 func NewMiddleWare(userRepo *user.UserRepository) *MiddleWare {
-	return &MiddleWare{
-		UserRepo: userRepo,
-	}
+	return &MiddleWare{UserRepo: userRepo}
 }
 
-// AuthMiddleware is a middleware function that checks if the user is authenticated
 func (m *MiddleWare) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header not provided"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
 			c.Abort()
 			return
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-		claims, err := lSvcs.ValidateToken(tokenString)
-
-		consultUser, err := m.UserRepo.GetUserByID(claims.UserID)
+		claims, err := authSvc.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			if errors.Is(err, utils.ErrTokenExpired) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			}
 			c.Abort()
 			return
 		}
 
-		if consultUser == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		exists, err := m.UserRepo.GetUserByID(claims.UserID)
+		if err != nil || exists == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 			c.Abort()
 			return
 		}

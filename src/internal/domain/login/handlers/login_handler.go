@@ -3,6 +3,8 @@ package lHandlers
 import (
 	lgServices "backend/src/internal/domain/login/services"
 	"backend/src/internal/models"
+	"backend/src/pkg/apperr"
+	"backend/src/pkg/respond"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,29 +13,20 @@ type LoginHandler struct {
 	LoginService *lgServices.LoginService
 }
 
-func NewLoginHandler(LoginService *lgServices.LoginService) *LoginHandler {
-	return &LoginHandler{
-		LoginService: LoginService,
-	}
+func NewLoginHandler(service *lgServices.LoginService) *LoginHandler {
+	return &LoginHandler{LoginService: service}
 }
 
 func (l *LoginHandler) Try(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-
-	if username == "" || password == "" {
-		c.JSON(400, gin.H{"error": "username and password headers required"})
+	var req models.RequestLogin
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Err(c, apperr.BadRequest("username and password are required"))
 		return
 	}
-
-	request := &models.RequestLogin{
-		Username: username,
-		Password: password,
-	}
-	token, err := l.LoginService.Try(request)
+	token, err := l.LoginService.Try(&req, c.ClientIP())
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		respond.Err(c, err)
 		return
 	}
-	c.JSON(200, gin.H{"token": *token})
+	respond.OK(c, gin.H{"token": *token})
 }

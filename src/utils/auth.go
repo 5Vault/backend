@@ -2,10 +2,10 @@ package utils
 
 import (
 	"errors"
+	"os"
 	"time"
-)
-import (
-	"github.com/dgrijalva/jwt-go"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthService struct{}
@@ -14,51 +14,52 @@ func NewAuthService() *AuthService {
 	return &AuthService{}
 }
 
-var JwtKey = []byte("$2a$10$S9YUva5WArXoAcP0zHNM6uQRxAhWpj61ub6TqtyDDHWg5tYqPEeEu")
 var ErrTokenExpired = errors.New("token is expired")
 
 type Claims struct {
 	UserID string `json:"user_id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
-func (a *AuthService) GenerateJwt(userId string) (string, error) {
+func jwtKey() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		panic("JWT_SECRET environment variable is not set")
+	}
+	return []byte(secret)
+}
 
-	expirationTime := jwt.TimeFunc().Add(2 * time.Hour)
+func (a *AuthService) GenerateJwt(userID string) (string, error) {
 	claims := &Claims{
-		UserID: userId,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(JwtKey)
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-
+	return token.SignedString(jwtKey())
 }
 
 func (a *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return JwtKey, nil
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return jwtKey(), nil
 	})
 
 	if err != nil {
-		var ve *jwt.ValidationError
-		if errors.As(err, &ve) {
-			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				return claims, ErrTokenExpired
-			}
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return claims, ErrTokenExpired
 		}
 		return nil, err
 	}
 
 	if !token.Valid {
-		return nil, err
+		return nil, errors.New("invalid token")
 	}
 
 	return claims, nil

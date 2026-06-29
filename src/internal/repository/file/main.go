@@ -88,12 +88,26 @@ func (repo *StorageRepository) GetRecentFilesByUserID(userID string, limit int) 
 	return files, nil
 }
 
+func (repo *StorageRepository) GetByURL(fileURL, userID string) (*schemas.File, error) {
+	var f schemas.File
+	err := repo.DB.Where("file_url = ? AND user_id = ?", fileURL, userID).First(&f).Error
+	return &f, err
+}
+
+func (repo *StorageRepository) DeleteByURL(fileURL, userID string) {
+	repo.DB.Where("file_url = ? AND user_id = ?", fileURL, userID).Delete(&schemas.File{})
+}
+
+func (repo *StorageRepository) DeleteByStorageID(storageID, userID string) {
+	repo.DB.Where("storage_id = ? AND user_id = ?", storageID, userID).Delete(&schemas.File{})
+}
+
 func (repo *StorageRepository) GetWeeklyFileUsage(userID string) ([]models.WeeklyFileUsage, error) {
 	var results []models.WeeklyFileUsage
 
 	err := repo.DB.Model(&schemas.File{}).
-		Select("TO_CHAR(uploaded_at, 'Day') AS day, COUNT(*) AS file_amount").
-		Where("user_id = ? AND uploaded_at >= NOW() - INTERVAL '7 days'", userID).
+		Select("DATE_FORMAT(uploaded_at, '%W') AS day, COUNT(*) AS file_amount").
+		Where("user_id = ? AND uploaded_at >= NOW() - INTERVAL 7 DAY", userID).
 		Group("day").
 		Order("MIN(uploaded_at)").
 		Scan(&results).Error
