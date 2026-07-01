@@ -3,11 +3,11 @@ FROM golang:1.24-alpine AS builder
 WORKDIR /app
 COPY . .
 WORKDIR /app/src/cmd/
-RUN go mod download
-RUN go build -o /app/main .
+RUN go build -mod=vendor -o /app/main .
 
 # Etapa final
 FROM alpine:latest
+RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /app/main .
 ENTRYPOINT ["./main"]
