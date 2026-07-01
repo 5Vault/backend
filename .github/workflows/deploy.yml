@@ -1,22 +1,26 @@
-name: Deploy Backend
+name: Deploy Automático para Ubuntu Server
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Executar Deploy no Ubuntu Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
           script: |
-            set -e
             cd /opt/fivevault/backend
             git pull origin main
             cd /opt/fivevault
