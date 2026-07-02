@@ -5,8 +5,8 @@ import (
 	"backend/src/internal/logger"
 	"backend/src/internal/models"
 	fileRepo "backend/src/internal/repository/file"
-	bucketRepo "backend/src/internal/repository/storage_config"
 	dirRepo "backend/src/internal/repository/storage"
+	bucketRepo "backend/src/internal/repository/storage_config"
 	userRepo "backend/src/internal/repository/user"
 	"backend/src/internal/schemas"
 	"backend/src/pkg/apperr"
@@ -209,7 +209,7 @@ func (s *BucketService) UploadFile(ctx context.Context, bucketID, dirID, userID,
 	s.BucketRepo.IncrStats(bucketID, 1, int64(len(body)))
 
 	publicURL := r2PublicURL(b, key)
-	s.FileRepo.CreateFile(&schemas.File{
+	_, err = s.FileRepo.CreateFile(&schemas.File{
 		FileID:     utils.GenerateULID(),
 		UserID:     userID,
 		StorageID:  bucketID,
@@ -218,6 +218,9 @@ func (s *BucketService) UploadFile(ctx context.Context, bucketID, dirID, userID,
 		FileSize:   int64(len(body)),
 		UploadedAt: time.Now(),
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &models.ResponseUploadFile{
 		FileName:  filename,
@@ -295,7 +298,7 @@ func (s *BucketService) UploadFilePublic(ctx context.Context, bucketID, userID, 
 	s.BucketRepo.IncrStats(bucketID, 1, int64(len(body)))
 
 	publicURLPublic := r2PublicURL(b, key)
-	s.FileRepo.CreateFile(&schemas.File{
+	_, err = s.FileRepo.CreateFile(&schemas.File{
 		FileID:     utils.GenerateULID(),
 		UserID:     userID,
 		StorageID:  bucketID,
@@ -304,6 +307,9 @@ func (s *BucketService) UploadFilePublic(ctx context.Context, bucketID, userID, 
 		FileSize:   int64(len(body)),
 		UploadedAt: time.Now(),
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &models.ResponseUploadFile{
 		FileName:  baseName,
@@ -526,13 +532,13 @@ func r2PublicURL(b *schemas.Bucket, key string) string {
 // storageDomain retorna o domínio base do storage (ex: "5vault.app").
 func storageDomain() string { return os.Getenv("STORAGE_DOMAIN") }
 
-// defaultSubdomain retorna o subdomínio padrão de um usuário: "{userID}.5vault.app".
-func defaultSubdomain(userID string) string {
+// defaultSubdomain retorna o subdomínio padrão de um bucket: "{bucketID}.sexdaily.app".
+func defaultSubdomain(bucketID string) string {
 	d := storageDomain()
 	if d == "" {
 		return ""
 	}
-	return userID + "." + d
+	return bucketID + "." + d
 }
 
 // SetCustomDomain configura um subdomínio *.5vault.app personalizado para o bucket.
@@ -593,7 +599,7 @@ func (s *BucketService) EnsureDefaultDomain(ctx context.Context) {
 
 	for _, b := range buckets {
 		if sd != "" {
-			sub := b.UserID + "." + sd
+			sub := b.BucketID + "." + sd
 			if err := s.CF.AttachCustomDomain(ctx, b.R2Name, sub); err != nil {
 				logger.Warn("failed to attach default domain", zap.String("bucket", b.R2Name), zap.String("domain", sub), zap.Error(err))
 			} else {
@@ -625,8 +631,8 @@ func (s *BucketService) provision(ctx context.Context, b *schemas.Bucket) {
 		return
 	}
 
-	// Tenta anexar o subdomínio padrão do usuário; cai no pub-*.r2.dev como fallback.
-	if sub := defaultSubdomain(b.UserID); sub != "" {
+	// Tenta anexar o subdomínio padrão do bucket; cai no pub-*.r2.dev como fallback.
+	if sub := defaultSubdomain(b.BucketID); sub != "" {
 		if err := s.CF.AttachCustomDomain(ctx, b.R2Name, sub); err != nil {
 			log.Warn("could not attach default domain, falling back to managed", zap.Error(err))
 			if domain, err := s.CF.AllowPublicAccess(ctx, b.R2Name); err != nil {
