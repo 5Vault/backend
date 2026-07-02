@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: fivevault-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: fivevault
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - fivevault-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fivevault-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fivevault-net
+
+volumes:
+  mariadb_data:
+
+networks:
+  fivevault-net:
+    name: fivevault-net
