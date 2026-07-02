@@ -44,7 +44,7 @@ func (repo *KeyRepository) DeleteBucketPerms(keyID uint) error {
 
 func (repo *KeyRepository) GetKey(key string) (*schemas.Key, error) {
 	var result schemas.Key
-	if err := repo.DB.Where("key = ?", key).First(&result).Error; err != nil {
+	if err := repo.DB.Where("`key` = ?", key).First(&result).Error; err != nil {
 		return nil, err
 	}
 	return &result, nil

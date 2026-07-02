@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"backend/src/internal/repository/key"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,6 @@ func NewKeyMiddleware(repo *key.KeyRepository) *KeyMiddleware {
 func (k *KeyMiddleware) ValidateKeysMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.GetHeader("Api-Key")
-		fmt.Printf("[DEBUG] Api-Key received: %q (len=%d)\n", apiKey, len(apiKey))
 
 		if apiKey == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Api-Key header is required"})
@@ -30,7 +28,6 @@ func (k *KeyMiddleware) ValidateKeysMiddleware() gin.HandlerFunc {
 		}
 
 		result, err := k.KeyRepo.GetKey(apiKey)
-		fmt.Printf("[DEBUG] GetKey result: %v, err: %v\n", result, err)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"valid_key": false})
 			c.Abort()
