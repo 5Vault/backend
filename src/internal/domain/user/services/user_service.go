@@ -6,6 +6,7 @@ import (
 	"backend/src/internal/logger"
 	keyRepo "backend/src/internal/repository/key"
 	usrRepo "backend/src/internal/repository/user"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"backend/src/utils"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	tierService "backend/src/internal/domain/user/tier/service"
 )
@@ -223,7 +225,8 @@ func (s *UserService) GetUserByID(id string, own bool) (*models.ResponseUser, er
 
 	if own {
 		key, err := s.KeyRepo.GetByUserID(id)
-		if err != nil {
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("error retrieving api key", zap.String("user_id", id), zap.Error(err))
 			return nil, apperr.Internal("error retrieving api key", err)
 		}
 		if key != nil {
