@@ -82,7 +82,7 @@ func (s *BucketService) CreateBucket(userID, name string) (*models.ResponseBucke
 	}
 
 	bucketID := utils.GenerateULID()
-	r2Name := fmt.Sprintf("fv-%s", bucketID)
+	r2Name := fmt.Sprintf("fk-%s", bucketID)
 
 	b := &schemas.Bucket{
 		BucketID: bucketID,
@@ -632,8 +632,11 @@ func (s *BucketService) provision(ctx context.Context, b *schemas.Bucket) {
 	}
 
 	// Tenta anexar o subdomínio padrão do bucket; cai no pub-*.r2.dev como fallback.
-	if sub := defaultSubdomain(b.BucketID); sub != "" {
+	sub := defaultSubdomain(b.BucketID)
+	log.Info("default subdomain", zap.String("sub", sub), zap.String("storage_domain", os.Getenv("STORAGE_DOMAIN")))
+	if sub != "" {
 		if err := s.CF.AttachCustomDomain(ctx, b.R2Name, sub); err != nil {
+			log.Error("attach domain error detail", zap.Error(err))
 			log.Warn("could not attach default domain, falling back to managed", zap.Error(err))
 			if domain, err := s.CF.AllowPublicAccess(ctx, b.R2Name); err != nil {
 				log.Warn("could not enable managed public access", zap.Error(err))

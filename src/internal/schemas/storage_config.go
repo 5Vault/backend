@@ -15,7 +15,7 @@ const (
 )
 
 // Bucket representa um bucket R2 real na Cloudflare, de propriedade de um usuário.
-// O nome no R2 é sempre fv-{BucketID}.
+// O nome no R2 é sempre fk-{BucketID}.
 type Bucket struct {
 	BucketID            string          `gorm:"primaryKey"`
 	UserID              string          `gorm:"index:idx_bucket_user_status,priority:1;not null"`

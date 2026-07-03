@@ -102,6 +102,7 @@ func (c *CloudflareClient) AttachCustomDomain(ctx context.Context, bucketName, d
 	body, _ := json.Marshal(map[string]any{
 		"domain":  domain,
 		"enabled": true,
+		"zoneId":  c.zoneID,
 	})
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
