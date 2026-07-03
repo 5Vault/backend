@@ -26,11 +26,15 @@ func (s *StorageService) ListFiles(userID string, itemsPerPage, page int) (*[]mo
 
 	var response []models.ResponseFile
 	for _, f := range *files {
+		fileURL := f.FileURL
+		if fileURL == "" {
+			fileURL = "/api/v1/file/" + f.FileID
+		}
 		response = append(response, models.ResponseFile{
 			ID:         f.ID,
 			FileID:     f.FileID,
 			FileType:   f.FileType,
-			FileURL:    "/api/v1/file/" + f.FileID,
+			FileURL:    fileURL,
 			UserID:     f.UserID,
 			StorageID:  f.StorageID,
 			UploadedAt: f.UploadedAt.Format("2006-01-02T15:04:05Z07:00"),
@@ -62,11 +66,15 @@ func (s *StorageService) GetFileStats(userID string) (*models.FileStats, error) 
 	var recentFiles []models.ResponseFile
 	if recentFilesData != nil {
 		for _, f := range *recentFilesData {
+			fileURL := f.FileURL
+			if fileURL == "" {
+				fileURL = "/api/v1/file/" + f.FileID
+			}
 			recentFiles = append(recentFiles, models.ResponseFile{
 				ID:         f.ID,
 				FileID:     f.FileID,
 				FileType:   f.FileType,
-				FileURL:    "/api/v1/file/" + f.FileID,
+				FileURL:    fileURL,
 				UserID:     f.UserID,
 				StorageID:  f.StorageID,
 				UploadedAt: f.UploadedAt.Format("2006-01-02T15:04:05Z07:00"),

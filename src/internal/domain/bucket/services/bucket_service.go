@@ -514,11 +514,11 @@ func (s *BucketService) GetStats(userID string) (*models.BucketStats, error) {
 }
 
 func r2PublicURL(b *schemas.Bucket, key string) string {
+	if b.PublicDomain != "" {
+		return fmt.Sprintf("https://%s/%s", strings.TrimRight(b.PublicDomain, "/"), key)
+	}
 	if b.CustomDomain != "" {
 		return fmt.Sprintf("https://%s/%s", strings.TrimRight(b.CustomDomain, "/"), key)
-	}
-	if b.PublicDomain != "" {
-		return fmt.Sprintf("https://%s/%s/%s", strings.TrimRight(b.PublicDomain, "/"), b.R2Name, key)
 	}
 	base := strings.TrimRight(os.Getenv("R2_PUBLIC_BASE"), "/")
 	if base == "" {
