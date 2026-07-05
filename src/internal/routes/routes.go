@@ -3,6 +3,8 @@ package routes
 import (
 	adminHndlr "backend/src/internal/domain/admin/handlers"
 	adminSvc "backend/src/internal/domain/admin/services"
+	backupHndlr "backend/src/internal/domain/backup/handlers"
+	backupSvc "backend/src/internal/domain/backup/services"
 	bucketHndlr "backend/src/internal/domain/bucket/handlers"
 	bucketSvc "backend/src/internal/domain/bucket/services"
 	paymentHndlr "backend/src/internal/domain/payment/handlers"
@@ -29,6 +31,7 @@ import (
 	"backend/src/internal/logger"
 	"backend/src/internal/middleware"
 	actionLogRepo "backend/src/internal/repository/action_log"
+	backupRepo "backend/src/internal/repository/backup"
 	strRepo "backend/src/internal/repository/file"
 	keyRepo "backend/src/internal/repository/key"
 	paymentRepoP "backend/src/internal/repository/payment"
@@ -107,6 +110,16 @@ func StartApp(db *gorm.DB, redisClient *redis.Client) {
 	paymentService := paymentSvc.NewPaymentService()
 	cardService := paymentSvc.NewCardService(pmRepository)
 	adminService := adminSvc.NewAdminService(userRepository, bucketRepository)
+	backupRepository := backupRepo.New(db)
+	backupService := backupSvc.New(backupRepository, userRepository, keyRepository)
+
+	// Provisiona bucket de backup ao criar novo usuário
+	userService.OnUserCreated = func(ctx context.Context, uid string) {
+		if _, err := backupService.EnsureBackupBucket(ctx, uid); err != nil {
+			logger.Warn("failed to provision backup bucket for new user", zap.String("user_id", uid), zap.Error(err))
+		}
+	}
+
 	ticketService := ticketSvc.New(ticketRepository, userRepository, emailClient)
 	pwdService := pwdSvc.New(passwordResetRepository, userRepository, emailClient)
 
@@ -121,6 +134,7 @@ func StartApp(db *gorm.DB, redisClient *redis.Client) {
 	paymentHandler := paymentHndlr.NewPaymentHandler(paymentService, tierService, paymentRepository, userRepository, emailClient).WithCardService(cardService)
 	cardHandler := paymentHndlr.NewCardHandler(cardService)
 	adminHandler := adminHndlr.NewAdminHandler(adminService, userRepository, actionLogRepository, paymentRepository, bucketRepository)
+	backupHandler := backupHndlr.New(backupService)
 	ticketHandler := ticketHndlr.New(ticketService)
 	pwdHandler := pwdHndlr.New(pwdService)
 	notifHandler := notifHndlr.New(notificationRepository)
@@ -185,6 +199,12 @@ func StartApp(db *gorm.DB, redisClient *redis.Client) {
 	bucketPublicGroup.POST("/:bucketId/upload", keyMDW.ValidateKeysMiddleware(), bucketHandler.UploadFilePublic)
 	bucketPublicGroup.GET("/:bucketId/files", keyMDW.ValidateKeysMiddleware(), bucketHandler.ListFilesPublic)
 	bucketPublicGroup.DELETE("/:bucketId/files", keyMDW.ValidateKeysMiddleware(), bucketHandler.DeleteFilePublic)
+
+	// Backup — upload via API key, listagem via JWT
+	backupKeyGroup := apiV1.Group("/backup")
+	backupKeyGroup.POST("/file", keyMDW.ValidateKeysMiddleware(), backupHandler.UploadFile)
+	backupKeyGroup.GET("/quota", keyMDW.ValidateKeysMiddleware(), backupHandler.GetQuota)
+	backupKeyGroup.GET("/sessions", authMDW.AuthMiddleware(), backupHandler.ListSessions)
 
 	// Arquivos públicos (via API key)
 	fileGroup := apiV1.Group("/file")

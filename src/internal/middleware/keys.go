@@ -41,6 +41,7 @@ func (k *KeyMiddleware) ValidateKeysMiddleware() gin.HandlerFunc {
 
 		c.Set("user_id_key", result.UserID)
 		c.Set("api_key", result.Key)
+		c.Set("key_id", uint(result.ID))
 		c.Next()
 	}
 }

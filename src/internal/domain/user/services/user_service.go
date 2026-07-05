@@ -6,6 +6,7 @@ import (
 	"backend/src/internal/logger"
 	keyRepo "backend/src/internal/repository/key"
 	usrRepo "backend/src/internal/repository/user"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -27,9 +28,10 @@ var tierSvc = tierService.NewTierService()
 var cSvc = utils.NewCryptService()
 
 type UserService struct {
-	UserRepo *usrRepo.UserRepository
-	KeyRepo  *keyRepo.KeyRepository
-	Email    *external.EmailClient
+	UserRepo      *usrRepo.UserRepository
+	KeyRepo       *keyRepo.KeyRepository
+	Email         *external.EmailClient
+	OnUserCreated func(ctx context.Context, userID string)
 }
 
 func NewUserService(userRepo *usrRepo.UserRepository, keyRepo *keyRepo.KeyRepository, email *external.EmailClient) *UserService {
@@ -80,6 +82,10 @@ func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 
 	actionlog.Log(newUserID, "user.register", "user", newUserID, "", nil)
 
+	if s.OnUserCreated != nil {
+		go s.OnUserCreated(context.Background(), newUserID)
+	}
+
 	go func() {
 		appURL := os.Getenv("APP_URL")
 		if err := s.Email.RenderAndSend(user.Email, "Bem-vindo ao FiveVault!", "welcome", map[string]any{
@@ -126,6 +132,9 @@ func (s *UserService) CreateGoogleUser(email, name, googleID string) (*string, e
 		return nil, apperr.Internal("failed to create api key", err)
 	}
 
+	if s.OnUserCreated != nil {
+		go s.OnUserCreated(context.Background(), newUserID)
+	}
 	logger.Info("google user created", zap.String("user_id", newUserID), zap.String("email", email))
 	return &newUserID, nil
 }
@@ -166,6 +175,9 @@ func (s *UserService) CreateDiscordUser(email, name, discordID, avatarURL string
 		return nil, apperr.Internal("failed to create api key", err)
 	}
 
+	if s.OnUserCreated != nil {
+		go s.OnUserCreated(context.Background(), newUserID)
+	}
 	logger.Info("discord user created", zap.String("user_id", newUserID), zap.String("email", email))
 	return &newUserID, nil
 }

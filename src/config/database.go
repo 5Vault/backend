@@ -37,6 +37,8 @@ func ConnectDB() *gorm.DB {
 		&schemas.TicketMessage{},
 		&schemas.PasswordResetToken{},
 		&schemas.Notification{},
+		&schemas.BackupBucket{},
+		&schemas.BackupSession{},
 	); err != nil {
 		panic(fmt.Sprintf("failed to migrate database: %v", err))
 	}

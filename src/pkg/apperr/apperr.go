@@ -49,6 +49,10 @@ func Internal(msg string, cause ...error) *AppError {
 	return &AppError{Code: http.StatusInternalServerError, Message: msg, Cause: first(cause)}
 }
 
+func TooManyRequests(msg string, cause ...error) *AppError {
+	return &AppError{Code: http.StatusTooManyRequests, Message: msg, Cause: first(cause)}
+}
+
 // As unwraps err to *AppError. Returns nil if not an AppError.
 func As(err error) *AppError {
 	var ae *AppError
@@ -68,3 +72,4 @@ func first(errs []error) error {
 	}
 	return nil
 }
+
