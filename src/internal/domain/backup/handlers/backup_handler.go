@@ -39,6 +39,7 @@ func (h *BackupHandler) UploadFile(c *gin.Context) {
 		return
 	}
 
+	fileType := c.PostForm("type") // "image" or "db"
 	sessionID := c.PostForm("session_id")
 
 	fileHeader, err := c.FormFile("file")
@@ -78,7 +79,7 @@ func (h *BackupHandler) UploadFile(c *gin.Context) {
 		}
 	}
 
-	result, err := h.BackupService.UploadFile(c.Request.Context(), keyID, userID, sessionID, filePath, data, contentType)
+	result, err := h.BackupService.UploadFile(c.Request.Context(), keyID, userID, sessionID, filePath, fileType, data, contentType)
 	if err != nil {
 		respond.Err(c, err)
 		return

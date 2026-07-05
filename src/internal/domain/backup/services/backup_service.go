@@ -89,12 +89,22 @@ type UploadResult struct {
 	SessionID  string `json:"session_id"`
 	PathPrefix string `json:"path_prefix"`
 	Remaining  int64  `json:"remaining_today"`
+	Skipped    bool   `json:"skipped,omitempty"`
 }
 
 // UploadFile uploads one file to the user's backup bucket.
-// If sessionID is empty, a new session is created (quota is checked).
-// If sessionID is provided, the file is appended to the existing session.
-func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sessionID, path string, data []byte, contentType string) (*UploadResult, error) {
+//
+// fileType must be "image" or "db":
+//   - "image": stored at images/{path}, skipped if already exists (idempotent).
+//   - "db":    stored at db/{session.PathPrefix}/{path}, always a new timestamped folder.
+//
+// sessionID groups files from the same backup cycle. On first call (sessionID==""),
+// quota is checked and a new session is created. Subsequent calls reuse the session.
+func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sessionID, filePath, fileType string, data []byte, contentType string) (*UploadResult, error) {
+	if fileType != "image" && fileType != "db" {
+		fileType = "db"
+	}
+
 	user, err := s.UserRepo.GetUserByID(userID)
 	if err != nil {
 		return nil, apperr.NotFound("user not found")
@@ -105,7 +115,7 @@ func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sess
 	var session *schemas.BackupSession
 
 	if sessionID == "" {
-		// New backup run — check quota
+		// New backup cycle — check quota
 		quota, ok := backupsPerDay[user.Tier]
 		if !ok {
 			quota = 1
@@ -118,8 +128,7 @@ func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sess
 			return nil, apperr.TooManyRequests(fmt.Sprintf("limite de %d backup(s) por dia atingido para este plano", quota))
 		}
 
-		now := time.Now()
-		prefix := now.Format("2006-01-02/15-04-05")
+		prefix := time.Now().Format("2006-01-02/15-04-05")
 		session = &schemas.BackupSession{
 			SessionID:  utils.GenerateULID(),
 			KeyID:      keyID,
@@ -131,7 +140,6 @@ func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sess
 			return nil, apperr.Internal("failed to create backup session", err)
 		}
 	} else {
-		// Existing session — just validate it belongs to this key and is from today
 		session, err = s.BackupRepo.GetSessionByKey(sessionID, keyID)
 		if err != nil {
 			return nil, apperr.NotFound("sessão de backup não encontrada ou expirada")
@@ -143,27 +151,48 @@ func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sess
 		return nil, err
 	}
 
-	// Sanitize path: remove leading slashes
-	cleanPath := strings.TrimLeft(path, "/")
-	r2Key := fmt.Sprintf("%s/%s", session.PathPrefix, cleanPath)
+	cleanPath := strings.TrimLeft(filePath, "/")
+
+	var r2Key string
+	if fileType == "image" {
+		// Images always go to the same flat folder; path is preserved as-is.
+		r2Key = "images/" + cleanPath
+	} else {
+		// DB dumps go under a timestamped subfolder inside db/.
+		r2Key = "db/" + session.PathPrefix + "/" + cleanPath
+	}
 
 	s3Client, err := s.CF.NewR2S3Client(ctx)
 	if err != nil {
 		return nil, apperr.Internal("failed to init S3 client", err)
 	}
 
-	_, err = s3Client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:        aws.String(bucket.R2Name),
-		Key:           aws.String(r2Key),
-		Body:          bytes.NewReader(data),
-		ContentType:   aws.String(contentType),
-		ContentLength: aws.Int64(int64(len(data))),
-	})
-	if err != nil {
-		return nil, apperr.Internal("upload to backup bucket failed", err)
+	// For images: skip upload if the object already exists in R2.
+	// HeadObject returns no error when the object exists; any error means proceed.
+	skipped := false
+	if fileType == "image" {
+		_, headErr := s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+			Bucket: aws.String(bucket.R2Name),
+			Key:    aws.String(r2Key),
+		})
+		if headErr == nil {
+			skipped = true
+		}
 	}
 
-	s.BackupRepo.IncrStats(session.SessionID, 1, int64(len(data)))
+	if !skipped {
+		_, err = s3Client.PutObject(ctx, &s3.PutObjectInput{
+			Bucket:        aws.String(bucket.R2Name),
+			Key:           aws.String(r2Key),
+			Body:          bytes.NewReader(data),
+			ContentType:   aws.String(contentType),
+			ContentLength: aws.Int64(int64(len(data))),
+		})
+		if err != nil {
+			return nil, apperr.Internal("upload to backup bucket failed", err)
+		}
+		s.BackupRepo.IncrStats(session.SessionID, 1, int64(len(data)))
+	}
 
 	quota := backupsPerDay[user.Tier]
 	if quota == 0 {
@@ -176,6 +205,7 @@ func (s *BackupService) UploadFile(ctx context.Context, keyID uint, userID, sess
 		SessionID:  session.SessionID,
 		PathPrefix: session.PathPrefix,
 		Remaining:  remaining,
+		Skipped:    skipped,
 	}, nil
 }
 
