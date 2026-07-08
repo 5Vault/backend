@@ -65,7 +65,7 @@ func (s *TicketService) Create(userID, subject, category, content string) (*sche
 			return
 		}
 		appURL := os.Getenv("APP_URL")
-		if err := s.Email.RenderAndSend(adminEmail, fmt.Sprintf("[FiveVault] Novo ticket: %s", subject), "ticket_opened", map[string]any{
+		if err := s.Email.RenderAndSend(adminEmail, fmt.Sprintf("[FiveKeepr] Novo ticket: %s", subject), "ticket_opened", map[string]any{
 			"UserName":     user.Name,
 			"UserEmail":    user.Email,
 			"Subject":      subject,
@@ -116,7 +116,7 @@ func (s *TicketService) Reply(ticketID, senderID, role, content string) (*schema
 				return
 			}
 			appURL := os.Getenv("APP_URL")
-			if err := s.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveVault] Resposta ao ticket: %s", ticket.Subject), "ticket_reply", map[string]any{
+			if err := s.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveKeepr] Resposta ao ticket: %s", ticket.Subject), "ticket_reply", map[string]any{
 				"Subject":      ticket.Subject,
 				"ReplyContent": content,
 				"TicketURL":    fmt.Sprintf("%s/suporte", appURL),
@@ -146,7 +146,7 @@ func (s *TicketService) Close(ticketID, adminID string) error {
 			return
 		}
 		appURL := os.Getenv("APP_URL")
-		if err := s.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveVault] Ticket encerrado: %s", ticket.Subject), "ticket_closed", map[string]any{
+		if err := s.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveKeepr] Ticket encerrado: %s", ticket.Subject), "ticket_closed", map[string]any{
 			"Subject":    ticket.Subject,
 			"SupportURL": fmt.Sprintf("%s/suporte", appURL),
 		}); err != nil {

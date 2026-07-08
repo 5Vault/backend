@@ -22,7 +22,7 @@ func NewEmailClient() *EmailClient {
 		port:     "587",
 		user:     os.Getenv("GMAIL_USER"),
 		password: os.Getenv("GMAIL_APP_PASSWORD"),
-		fromName: "FiveVault",
+		fromName: "FiveKeepr",
 	}
 }
 

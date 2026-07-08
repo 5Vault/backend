@@ -43,7 +43,7 @@ const emailBase = `<!DOCTYPE html>
     {{.Content}}
   </div>
   <div class="footer">
-    <p>© 2025 FiveVault · Você está recebendo este email pois tem uma conta na plataforma.</p>
+    <p>© 2025 FiveKeepr · Você está recebendo este email pois tem uma conta na plataforma.</p>
   </div>
 </div>
 </body>
@@ -55,11 +55,11 @@ const tmplWelcome = `<!DOCTYPE html>
 </head><body><div class="wrap"><div class="header"><div class="logo">Five<span>Vault</span></div></div>
 <div class="body">
 <h1>Bem-vindo, {{.Name}}! 👋</h1>
-<p>Sua conta foi criada com sucesso. Você já pode fazer login e começar a usar o FiveVault.</p>
-<p>Com o FiveVault você tem acesso a armazenamento seguro na nuvem, gerenciamento de buckets R2 e muito mais.</p>
-<a href="{{.AppURL}}" class="btn">Acessar o FiveVault</a>
+<p>Sua conta foi criada com sucesso. Você já pode fazer login e começar a usar o FiveKeepr.</p>
+<p>Com o FiveKeepr você tem acesso a armazenamento seguro na nuvem, gerenciamento de buckets R2 e muito mais.</p>
+<a href="{{.AppURL}}" class="btn">Acessar o FiveKeepr</a>
 <p style="font-size:13px;color:#a1a1aa">Usuário: <strong>{{.Username}}</strong></p>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplNewDevice = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -74,7 +74,7 @@ const tmplNewDevice = `<!DOCTYPE html>
 </div>
 <p>Se foi você, pode ignorar este email. Se não reconhece este acesso, recomendamos que redefina sua senha imediatamente.</p>
 <a href="{{.ResetURL}}" class="btn">Redefinir minha senha</a>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplPasswordReset = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -82,11 +82,11 @@ const tmplPasswordReset = `<!DOCTYPE html>
 </head><body><div class="wrap"><div class="header"><div class="logo">Five<span>Vault</span></div></div>
 <div class="body">
 <h1>Redefinição de senha</h1>
-<p>Recebemos uma solicitação para redefinir a senha da sua conta FiveVault.</p>
+<p>Recebemos uma solicitação para redefinir a senha da sua conta FiveKeepr.</p>
 <p>Clique no botão abaixo para criar uma nova senha. Este link é válido por <strong>1 hora</strong>.</p>
 <a href="{{.ResetURL}}" class="btn">Redefinir senha</a>
 <p style="font-size:13px;color:#a1a1aa">Se você não solicitou a redefinição, ignore este email. Sua senha permanece a mesma.</p>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplTierUpgrade = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -102,8 +102,8 @@ const tmplTierUpgrade = `<!DOCTYPE html>
   <p style="margin-top:6px"><strong>Data:</strong> {{.Date}}</p>
 </div>
 <p>Agora você tem acesso a todos os recursos do plano {{.TierName}}. Aproveite!</p>
-<a href="{{.AppURL}}" class="btn">Acessar o FiveVault</a>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+<a href="{{.AppURL}}" class="btn">Acessar o FiveKeepr</a>
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplTicketOpened = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -115,7 +115,7 @@ const tmplTicketOpened = `<!DOCTYPE html>
 <p><strong>Assunto:</strong> {{.Subject}}</p>
 <div class="msg"><p>{{.FirstMessage}}</p></div>
 <a href="{{.AdminURL}}" class="btn">Ver ticket no painel admin</a>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplTicketReply = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -123,10 +123,10 @@ const tmplTicketReply = `<!DOCTYPE html>
 </head><body><div class="wrap"><div class="header"><div class="logo">Five<span>Vault</span></div></div>
 <div class="body">
 <h1>Resposta ao seu ticket</h1>
-<p>O suporte FiveVault respondeu ao seu ticket: <strong>{{.Subject}}</strong></p>
+<p>O suporte FiveKeepr respondeu ao seu ticket: <strong>{{.Subject}}</strong></p>
 <div class="msg"><p>{{.ReplyContent}}</p></div>
 <a href="{{.TicketURL}}" class="btn">Ver ticket completo</a>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`
 
 const tmplTicketClosed = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -137,4 +137,4 @@ const tmplTicketClosed = `<!DOCTYPE html>
 <p>Seu ticket <strong>{{.Subject}}</strong> foi marcado como resolvido.</p>
 <p>Se o problema persistir ou você tiver novas dúvidas, abra um novo ticket a qualquer momento.</p>
 <a href="{{.SupportURL}}" class="btn">Abrir novo ticket</a>
-</div><div class="footer"><p>© 2025 FiveVault</p></div></div></body></html>`
+</div><div class="footer"><p>© 2025 FiveKeepr</p></div></div></body></html>`

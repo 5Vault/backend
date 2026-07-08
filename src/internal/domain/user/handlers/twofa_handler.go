@@ -27,7 +27,7 @@ func (h *UserHandler) Setup2FA(c *gin.Context) {
 
 	issuer := os.Getenv("APP_NAME")
 	if issuer == "" {
-		issuer = "5Vault"
+		issuer = "5Keepr"
 	}
 
 	key, err := totp.Generate(totp.GenerateOpts{

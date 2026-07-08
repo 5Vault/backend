@@ -20,7 +20,7 @@ func NewTierService() *TierService {
 }
 
 // Planos competitivos com o Fivemanage ($8/mês ≈ R$40 para 50GB).
-// 5Vault oferece mais storage pelo mesmo preço ou mais barato.
+// 5Keepr oferece mais storage pelo mesmo preço ou mais barato.
 var defaultTiers = []Tier{
 	{
 		ID:   "free",
@@ -33,7 +33,7 @@ var defaultTiers = []Tier{
 		Included: []Info{
 			{Pt: "1GB de Armazenamento", En: "1GB Storage"},
 			{Pt: "1 Chave de API", En: "1 API Key"},
-			{Pt: "500 Requisições/semana", En: "500 Requests/week"},
+			{Pt: "5000 Requisições/semana", En: "5000 Requests/week"},
 			{Pt: "Subdomínio compartilhado", En: "Shared subdomain"},
 		},
 	},

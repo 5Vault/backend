@@ -67,7 +67,7 @@ func (l *LoginService) Try(credentials *models.RequestLogin, ip string) (*string
 		if isNewDevice && ip != "" && ip != "::1" && ip != "127.0.0.1" {
 			actionlog.Log(userResult.UserID, "login.new_device", "", "", ip)
 			appURL := os.Getenv("APP_URL")
-			if err := l.Email.RenderAndSend(userResult.Email, "Novo acesso à sua conta FiveVault", "new_device", map[string]any{
+			if err := l.Email.RenderAndSend(userResult.Email, "Novo acesso à sua conta FiveKeepr", "new_device", map[string]any{
 				"IP":       ip,
 				"Time":     time.Now().Format("02/01/2006 às 15:04"),
 				"ResetURL": fmt.Sprintf("%s/forgot-password", appURL),

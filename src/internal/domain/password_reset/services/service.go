@@ -56,7 +56,7 @@ func (s *PasswordResetService) RequestReset(email string) error {
 	resetURL := fmt.Sprintf("%s/reset-password/%s", appURL, token)
 
 	go func() {
-		if err := s.Email.RenderAndSend(user.Email, "Redefinição de senha — FiveVault", "password_reset", map[string]any{
+		if err := s.Email.RenderAndSend(user.Email, "Redefinição de senha — FiveKeepr", "password_reset", map[string]any{
 			"ResetURL": resetURL,
 		}); err != nil {
 			logger.Warn("failed to send password reset email", zap.String("user_id", user.UserID), zap.Error(err))

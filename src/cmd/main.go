@@ -20,7 +20,7 @@ func init() {
 func main() {
 	defer logger.Sync()
 
-	logger.Info("fivevault starting")
+	logger.Info("fivekeepr starting")
 
 	db := *database.ConnectDB()
 	logger.Info("database connected")

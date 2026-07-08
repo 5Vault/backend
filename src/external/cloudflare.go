@@ -134,8 +134,8 @@ type dnsRecord struct {
 	TTL     int    `json:"ttl"`
 }
 
-// CreateCNAME adds a CNAME record in the 5vault zone so that
-// {subdomain}.storage.5vault.app points to the R2 bucket public endpoint.
+// CreateCNAME adds a CNAME record in the 5keepr zone so that
+// {subdomain}.storage.5keepr.app points to the R2 bucket public endpoint.
 func (c *CloudflareClient) CreateCNAME(ctx context.Context, subdomain, target string) error {
 	url := fmt.Sprintf("%s/zones/%s/dns_records", cfAPIBase, c.zoneID)
 	record := dnsRecord{

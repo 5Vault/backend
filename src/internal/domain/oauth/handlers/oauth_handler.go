@@ -26,12 +26,12 @@ func (h *OAuthHandler) WithDiscord(svc *oauthSvc.DiscordOAuthService) *OAuthHand
 }
 
 func (h *OAuthHandler) GoogleLogin(c *gin.Context) {
-	url := h.OAuthService.GetGoogleAuthURL("fivevault-oauth-state")
+	url := h.OAuthService.GetGoogleAuthURL("fivekeepr-oauth-state")
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 func (h *OAuthHandler) GoogleCallback(c *gin.Context) {
-	if c.Query("state") != "fivevault-oauth-state" {
+	if c.Query("state") != "fivekeepr-oauth-state" {
 		respond.Err(c, apperr.BadRequest("invalid oauth state"))
 		return
 	}
@@ -56,7 +56,7 @@ func (h *OAuthHandler) DiscordLogin(c *gin.Context) {
 		respond.Err(c, apperr.Internal("discord oauth not configured"))
 		return
 	}
-	c.Redirect(http.StatusTemporaryRedirect, h.DiscordOAuthService.GetAuthURL("fivevault-discord-state"))
+	c.Redirect(http.StatusTemporaryRedirect, h.DiscordOAuthService.GetAuthURL("fivekeepr-discord-state"))
 }
 
 func (h *OAuthHandler) DiscordCallback(c *gin.Context) {
@@ -73,7 +73,7 @@ func (h *OAuthHandler) DiscordCallback(c *gin.Context) {
 		return
 	}
 
-	if c.Query("state") != "fivevault-discord-state" {
+	if c.Query("state") != "fivekeepr-discord-state" {
 		respond.Err(c, apperr.BadRequest("invalid oauth state"))
 		return
 	}

@@ -88,7 +88,7 @@ func (s *UserService) CreateUser(user *models.RequestUser) (*string, error) {
 
 	go func() {
 		appURL := os.Getenv("APP_URL")
-		if err := s.Email.RenderAndSend(user.Email, "Bem-vindo ao FiveVault!", "welcome", map[string]any{
+		if err := s.Email.RenderAndSend(user.Email, "Bem-vindo ao FiveKeepr!", "welcome", map[string]any{
 			"Name":     user.Name,
 			"Username": user.Username,
 			"AppURL":   fmt.Sprintf("%s/dashboard", appURL),

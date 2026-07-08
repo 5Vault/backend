@@ -160,7 +160,7 @@ func (h *PaymentHandler) handlePaymentSucceeded(pi stripe.PaymentIntent) {
 		return
 	}
 	appURL := os.Getenv("APP_URL")
-	_ = h.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveVault] Upgrade para %s confirmado!", tierID), "tier_upgrade", map[string]any{
+	_ = h.Email.RenderAndSend(user.Email, fmt.Sprintf("[FiveKeepr] Upgrade para %s confirmado!", tierID), "tier_upgrade", map[string]any{
 		"TierName": tierID,
 		"Amount":   fmt.Sprintf("%.2f", float64(pi.Amount)/100),
 		"Date":     now.Format("02/01/2006"),

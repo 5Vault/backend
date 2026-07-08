@@ -529,7 +529,7 @@ func r2PublicURL(b *schemas.Bucket, key string) string {
 
 // ── interno ───────────────────────────────────────────────────────────────────
 
-// storageDomain retorna o domínio base do storage (ex: "5vault.app").
+// storageDomain retorna o domínio base do storage (ex: "5keepr.app").
 func storageDomain() string { return os.Getenv("STORAGE_DOMAIN") }
 
 // defaultSubdomain retorna o subdomínio padrão de um bucket: "{bucketID}.sexdaily.app".
@@ -541,7 +541,7 @@ func defaultSubdomain(bucketID string) string {
 	return bucketID + "." + d
 }
 
-// SetCustomDomain configura um subdomínio *.5vault.app personalizado para o bucket.
+// SetCustomDomain configura um subdomínio *.5keepr.app personalizado para o bucket.
 // Apenas usuários pro/enterprise podem alterar o subdomínio padrão.
 func (s *BucketService) SetCustomDomain(ctx context.Context, bucketID, userID, subdomain string) error {
 	b, err := s.BucketRepo.GetByID(bucketID, userID)
