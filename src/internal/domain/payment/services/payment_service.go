@@ -14,7 +14,7 @@ import (
 func init() {
 	key := os.Getenv("STRIPE_SECRET_KEY")
 	if key == "" {
-		logger.Warn("STRIPE_SECRET_KEY not set — payment features disabled")
+		fmt.Println("STRIPE_SECRET_KEY not set — payment features disabled")
 		return
 	}
 	stripe.Key = key

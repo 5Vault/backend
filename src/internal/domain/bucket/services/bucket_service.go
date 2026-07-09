@@ -631,7 +631,7 @@ func (s *BucketService) provision(ctx context.Context, b *schemas.Bucket) {
 		return
 	}
 
-	// Tenta anexar o subdomínio padrão do bucket; cai no pub-*.r2.dev como fallback.
+	// Tenta anexar o subdomínio padrão do usuário; cai no pub-*.r2.dev como fallback.
 	sub := defaultSubdomain(b.BucketID)
 	log.Info("default subdomain", zap.String("sub", sub), zap.String("storage_domain", os.Getenv("STORAGE_DOMAIN")))
 	if sub != "" {

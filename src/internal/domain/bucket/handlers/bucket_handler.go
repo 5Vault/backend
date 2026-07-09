@@ -208,7 +208,14 @@ func (h *BucketHandler) UploadFilePublic(c *gin.Context) {
 		userID = c.GetString("user_id")
 	}
 
-	res, err := h.Svc.UploadFilePublic(c.Request.Context(), c.Param("bucketId"), userID, header.Filename, buf.Bytes(), contentType, forceCreate)
+	filename := header.Filename
+	dir := c.Query("dir")
+	if dir != "" {
+		dir = strings.Trim(dir, "/")
+		filename = dir + "/" + filename
+	}
+
+	res, err := h.Svc.UploadFilePublic(c.Request.Context(), c.Param("bucketId"), userID, filename, buf.Bytes(), contentType, forceCreate)
 	if err != nil {
 		respond.Err(c, err)
 		return
